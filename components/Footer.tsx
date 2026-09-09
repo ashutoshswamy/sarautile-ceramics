@@ -1,19 +1,29 @@
 import Link from "next/link";
+import {
+  BookOpen,
+  Boxes,
+  Coffee,
+  Droplets,
+  Mail,
+  MapPin,
+  Tag,
+} from "lucide-react";
 
 const COLUMNS = [
   {
     heading: "Shop",
     links: [
-      { href: "/mugs", label: "All mugs" },
-      { href: "/mugs", label: "Seconds shelf" },
-      { href: "/wholesale", label: "Wholesale" },
+      { href: "/mugs", label: "All mugs", Icon: Coffee },
+      { href: "/mugs", label: "Seconds shelf", Icon: Tag },
+      { href: "/wholesale", label: "Wholesale", Icon: Boxes },
     ],
   },
   {
     heading: "Studio",
     links: [
-      { href: "/story", label: "Our story" },
-      { href: "/care", label: "Care" },
+      { href: "/story", label: "Our story", Icon: BookOpen },
+      { href: "/care", label: "Care", Icon: Droplets },
+      { href: "mailto:hello@sarautileceramics.in", label: "hello@sarautileceramics.in", Icon: Mail },
     ],
   },
 ];
@@ -33,31 +43,29 @@ export default function Footer() {
             </p>
           </div>
           {COLUMNS.map((col) => (
-            <nav key={col.heading} className="flex flex-col gap-2.5">
-              <span className="kicker mb-1">{col.heading}</span>
+            <nav key={col.heading} className="flex flex-col gap-1">
+              <span className="kicker mb-2">{col.heading}</span>
               {col.links.map((link) => (
                 <Link
                   key={link.label}
                   href={link.href}
-                  className="text-sm text-ink-soft no-underline transition-colors hover:text-ink"
+                  className="group inline-flex items-center gap-2.5 py-1 text-sm text-ink-soft no-underline transition-colors hover:text-ink"
                 >
+                  <link.Icon
+                    size={15}
+                    strokeWidth={1.7}
+                    className="shrink-0 text-ink-faint transition-colors group-hover:text-terracotta"
+                  />
                   {link.label}
                 </Link>
               ))}
-              {col.heading === "Studio" && (
-                <a
-                  href="mailto:hello@sarautileceramics.in"
-                  className="text-sm text-ink-soft no-underline transition-colors hover:text-ink"
-                >
-                  hello@sarautileceramics.in
-                </a>
-              )}
             </nav>
           ))}
         </div>
-        <div className="flex flex-wrap items-center gap-3 mt-10 pt-6 border-t border-rule text-xs text-ink-faint">
+        <div className="flex flex-wrap items-center gap-2 mt-10 pt-6 border-t border-rule text-xs text-ink-faint">
           <span>© {new Date().getFullYear()} Sarautile Ceramics</span>
           <span aria-hidden>·</span>
+          <MapPin size={13} strokeWidth={1.7} className="shrink-0" />
           <span>Thrown in India, since 2019</span>
         </div>
       </div>

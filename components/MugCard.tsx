@@ -1,5 +1,6 @@
 import Link from "next/link";
 import PlaceholderPhoto from "@/components/PlaceholderPhoto";
+import WishlistButton from "@/components/WishlistButton";
 import type { Mug } from "@/lib/data";
 
 export default function MugCard({
@@ -10,21 +11,25 @@ export default function MugCard({
   showLeft?: boolean;
 }) {
   return (
-    <Link href={`/mugs/${mug.slug}`} className="mug-card group">
-      <div className="mug-card__media">
+    <div className="mug-card group relative">
+      <div className="mug-card__media relative">
         <PlaceholderPhoto
           label={mug.photoLabel}
           rounded="rounded-none"
           className="aspect-square"
         />
+        <WishlistButton slug={mug.slug} className="absolute top-2.5 right-2.5" />
       </div>
       <div className="flex flex-col gap-1">
         <div className="flex items-baseline gap-2">
-          <span className="font-medium text-ink transition-colors group-hover:text-terracotta-hover">
+          <Link
+            href={`/mugs/${mug.slug}`}
+            className="font-medium text-ink no-underline transition-colors group-hover:text-terracotta-hover after:absolute after:inset-0 after:z-0"
+          >
             {mug.name}
-          </span>
+          </Link>
           {showLeft && (
-            <span className="ml-auto rounded-full bg-warn-bg px-2 py-0.5 text-[11px] font-medium text-warn-ink">
+            <span className="relative z-[1] ml-auto rounded-full bg-warn-bg px-2 py-0.5 text-[11px] font-medium text-warn-ink">
               {mug.left}
             </span>
           )}
@@ -34,6 +39,6 @@ export default function MugCard({
           <span className="ml-auto font-medium text-ink">₹{mug.price}</span>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }

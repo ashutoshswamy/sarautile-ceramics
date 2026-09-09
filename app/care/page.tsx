@@ -1,7 +1,16 @@
+import { Check, TriangleAlert, Info, Wrench, LifeBuoy } from "lucide-react";
 import { care } from "@/lib/data";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Care — Sarautile Ceramics" };
+export const metadata: Metadata = { title: "Care - Sarautile Ceramics" };
+
+// verdict → icon; unknown verdicts fall back to Info
+const VERDICT_ICON: Record<string, typeof Check> = {
+  Yes: Check,
+  "Don’t": TriangleAlert,
+  Normal: Info,
+  Fixable: Wrench,
+};
 
 export default function CarePage() {
   return (
@@ -13,13 +22,16 @@ export default function CarePage() {
       </p>
 
       <div className="flex flex-col gap-3 mt-10">
-        {care.map((c) => (
+        {care.map((c) => {
+          const VerdictIcon = VERDICT_ICON[c.verdict] ?? Info;
+          return (
           <div key={c.q} className="card p-5.5 rise">
             <div className="flex items-center gap-2.5">
               <span
-                className="text-[11px] font-medium px-2.5 py-0.5 rounded-full"
+                className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-0.5 rounded-full"
                 style={{ background: c.tagBg, color: c.tagFg }}
               >
+                <VerdictIcon size={12} strokeWidth={2} aria-hidden />
                 {c.verdict}
               </span>
               <h4 className="display-3 text-[1.05rem]">{c.q}</h4>
@@ -28,11 +40,15 @@ export default function CarePage() {
               {c.a}
             </p>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="mt-8 px-5.5 py-5 rounded-3xl border border-rule">
-        <h4 className="font-medium">Something went wrong?</h4>
+        <h4 className="flex items-center gap-2 font-medium">
+          <LifeBuoy size={16} strokeWidth={1.7} className="text-terracotta" aria-hidden />
+          Something went wrong?
+        </h4>
         <p className="text-sm leading-relaxed text-ink-soft mt-2">
           Email a photo to{" "}
           <a href="mailto:hello@sarautileceramics.in">

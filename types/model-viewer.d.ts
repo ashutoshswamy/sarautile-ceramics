@@ -12,6 +12,9 @@ type ModelViewerAttributes = DetailedHTMLProps<
   "disable-zoom"?: boolean;
   "interaction-prompt"?: string;
   "camera-orbit"?: string;
+  "auto-rotate"?: boolean;
+  "auto-rotate-delay"?: string | number;
+  "rotation-per-second"?: string;
   "field-of-view"?: string;
   "shadow-intensity"?: string;
   exposure?: string;

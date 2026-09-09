@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArrowRight, ChevronRight } from "lucide-react";
 import PlaceholderPhoto from "@/components/PlaceholderPhoto";
 import ProductDetail from "@/components/ProductDetail";
 import { findMug, mugs } from "@/lib/data";
@@ -14,7 +15,7 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { slug } = await props.params;
   const mug = findMug(slug);
-  return { title: mug ? `${mug.name} — Sarautile Ceramics` : "Mug not found" };
+  return { title: mug ? `${mug.name} - Sarautile Ceramics` : "Mug not found" };
 }
 
 export default async function MugPage(props: PageProps<"/mugs/[slug]">) {
@@ -25,11 +26,12 @@ export default async function MugPage(props: PageProps<"/mugs/[slug]">) {
   return (
     <>
       <div className="container-x">
-        <nav className="py-5 text-xs text-ink-faint">
+        <nav className="flex items-center gap-1 py-5 text-xs text-ink-faint">
           <Link href="/mugs" className="text-ink-faint no-underline hover:text-ink">
             Mugs
-          </Link>{" "}
-          / <span className="text-ink-soft">{mug.name}</span>
+          </Link>
+          <ChevronRight size={13} strokeWidth={1.7} aria-hidden />
+          <span className="text-ink-soft">{mug.name}</span>
         </nav>
 
         <div className="pb-14">
@@ -40,7 +42,7 @@ export default async function MugPage(props: PageProps<"/mugs/[slug]">) {
       <div className="bg-sand border-y border-rule">
         <div className="container-x section grid gap-10 md:grid-cols-[.85fr_1.15fr] md:items-center rise">
           <PlaceholderPhoto
-            label="portrait — Meera at the wheel"
+            label="portrait - Meera at the wheel"
             rounded="rounded-[28px]"
             className="aspect-[4/3] p-3.5"
           />
@@ -55,11 +57,11 @@ export default async function MugPage(props: PageProps<"/mugs/[slug]">) {
               Meera&apos;s been throwing for eleven years; this mug is the
               shape she&apos;d been trying to get right for about nine of them.
               Arjun mixes every glaze from raw materials, which is why Ember is
-              slightly different every batch — and why we photograph the
+              slightly different every batch - and why we photograph the
               actual mug you&apos;ll get.
             </p>
             <Link href="/story" className="link-arrow mt-5">
-              Read the whole story <span aria-hidden>→</span>
+              Read the whole story <ArrowRight size={16} strokeWidth={1.7} aria-hidden />
             </Link>
           </div>
         </div>

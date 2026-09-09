@@ -2,7 +2,7 @@ import PlaceholderPhoto from "@/components/PlaceholderPhoto";
 import { timeline } from "@/lib/data";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Our story — Sarautile Ceramics" };
+export const metadata: Metadata = { title: "Our story - Sarautile Ceramics" };
 
 export default function StoryPage() {
   return (

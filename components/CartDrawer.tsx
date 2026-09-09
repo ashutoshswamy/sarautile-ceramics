@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { X, Trash2, Gift, ArrowRight, ShoppingBag } from "lucide-react";
 import PlaceholderPhoto from "@/components/PlaceholderPhoto";
 import { useCart } from "@/components/CartContext";
-import { cartLines } from "@/lib/data";
+import { resolveCart, POSTAGE } from "@/lib/cart";
 
 export default function CartDrawer() {
-  const { open, setOpen } = useCart();
+  const { open, setOpen, lines, setQty, remove } = useCart();
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
 
@@ -15,8 +16,16 @@ export default function CartDrawer() {
   useEffect(() => {
     if (open) {
       setMounted(true);
-      const id = requestAnimationFrame(() => setVisible(true));
-      return () => cancelAnimationFrame(id);
+      // Double rAF: let the browser paint the closed state first, otherwise the
+      // open transition has no "from" frame and the panel just snaps in.
+      let inner = 0;
+      const outer = requestAnimationFrame(() => {
+        inner = requestAnimationFrame(() => setVisible(true));
+      });
+      return () => {
+        cancelAnimationFrame(outer);
+        cancelAnimationFrame(inner);
+      };
     }
     setVisible(false);
     const id = setTimeout(() => setMounted(false), 450);
@@ -43,15 +52,12 @@ export default function CartDrawer() {
 
   if (!mounted) return null;
 
-  const subtotal = cartLines.reduce((sum, l) => sum + l.price * l.qty, 0);
-  const post = 149;
+  const { items, subtotal, count } = resolveCart(lines);
+  const total = subtotal + (items.length ? POSTAGE : 0);
 
   return (
     <div className="cart-overlay" data-open={visible}>
-      <div
-        className="cart-overlay__scrim"
-        onClick={() => setOpen(false)}
-      />
+      <div className="cart-overlay__scrim" onClick={() => setOpen(false)} />
       <div
         className="cart-overlay__panel"
         role="dialog"
@@ -61,83 +67,123 @@ export default function CartDrawer() {
         <div className="flex items-baseline gap-2.5 px-6 pt-6 pb-4 border-b border-rule">
           <h3 className="display-3 text-[1.35rem]">Your cart</h3>
           <span className="text-xs text-ink-faint">
-            {cartLines.reduce((n, l) => n + l.qty, 0)} mugs
+            {count} {count === 1 ? "mug" : "mugs"}
           </span>
           <button
             onClick={() => setOpen(false)}
-            className="ml-auto text-xl text-ink-soft cursor-pointer leading-none transition-colors hover:text-ink"
+            className="ml-auto -mr-1 flex items-center text-ink-soft cursor-pointer transition-colors hover:text-ink"
             aria-label="Close cart"
           >
-            ×
+            <X size={20} strokeWidth={1.6} />
           </button>
         </div>
 
-        <div className="flex-1 px-6 py-5 flex flex-col gap-5 overflow-y-auto">
-          {cartLines.map((line, i) => (
-            <div key={i} className="flex gap-3.5">
-              <PlaceholderPhoto
-                label={`${line.name} ${line.glaze}`}
-                rounded="rounded-[18px]"
-                className="w-[72px] h-[72px] flex-none"
-                sizes="72px"
-              />
-              <div className="flex-1">
-                <div className="flex items-baseline gap-2">
-                  <span className="font-medium text-[0.95rem]">
-                    {line.name}
-                  </span>
-                  <span className="ml-auto text-sm">₹{line.price}</span>
+        {items.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center">
+            <ShoppingBag size={26} strokeWidth={1.5} className="text-ink-faint" />
+            <p className="text-sm text-ink-soft">Your cart is empty.</p>
+            <Link
+              href="/mugs"
+              onClick={() => setOpen(false)}
+              className="btn btn-ghost"
+            >
+              Find a mug
+            </Link>
+          </div>
+        ) : (
+          <>
+            <div className="flex-1 px-6 py-5 flex flex-col gap-5 overflow-y-auto">
+              {items.map((item) => (
+                <div key={`${item.slug}-${item.glaze}`} className="flex gap-3.5">
+                  <PlaceholderPhoto
+                    label={item.mug.photoLabel}
+                    rounded="rounded-[18px]"
+                    className="w-[72px] h-[72px] flex-none"
+                    sizes="72px"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-medium text-[0.95rem]">
+                        {item.mug.name}
+                      </span>
+                      <span className="ml-auto text-sm">₹{item.lineTotal}</span>
+                    </div>
+                    <span className="text-xs text-ink-faint">
+                      {item.glaze} · {item.mug.oz} oz
+                    </span>
+                    <div className="flex items-center gap-3 mt-2">
+                      <span className="inline-flex items-center gap-3 border border-rule-strong rounded-full px-3 py-1 text-sm">
+                        <button
+                          onClick={() =>
+                            setQty(item.slug, item.glaze, item.qty - 1)
+                          }
+                          className="cursor-pointer text-ink-soft leading-none hover:text-ink"
+                          aria-label="Decrease quantity"
+                        >
+                          –
+                        </button>
+                        {item.qty}
+                        <button
+                          onClick={() =>
+                            setQty(item.slug, item.glaze, item.qty + 1)
+                          }
+                          className="cursor-pointer text-ink-soft leading-none hover:text-ink"
+                          aria-label="Increase quantity"
+                        >
+                          +
+                        </button>
+                      </span>
+                      <button
+                        onClick={() => remove(item.slug, item.glaze)}
+                        className="inline-flex items-center gap-1 text-xs text-ink-faint cursor-pointer transition-colors hover:text-ink"
+                      >
+                        <Trash2 size={12} strokeWidth={1.8} aria-hidden />
+                        Remove
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <span className="text-xs text-ink-faint">
-                  {line.glaze} · 12 oz
+              ))}
+
+              <div className="card bg-sage-bg border-transparent px-4.5 py-4">
+                <span className="flex items-center gap-2 text-sm font-medium text-sage-ink">
+                  <Gift size={15} strokeWidth={1.8} aria-hidden />
+                  Wrap it in newspaper and string?
                 </span>
-                <div className="flex items-center gap-3 mt-2">
-                  <span className="inline-flex items-center gap-2.5 border border-rule-strong rounded-full px-3 py-1 text-sm">
-                    – {line.qty} +
-                  </span>
-                  <span className="text-xs text-ink-faint cursor-pointer transition-colors hover:text-ink">
-                    Remove
-                  </span>
-                </div>
+                <p className="text-xs leading-relaxed text-sage-ink-soft mt-1.5">
+                  Free. We&apos;ll write your note on a card.{" "}
+                  <span className="underline cursor-pointer">Add a note</span>
+                </p>
               </div>
             </div>
-          ))}
 
-          <div className="card bg-sage-bg border-transparent px-4.5 py-4">
-            <span className="text-sm font-medium text-sage-ink">
-              Wrap it in newspaper and string?
-            </span>
-            <p className="text-xs leading-relaxed text-sage-ink-soft mt-1.5">
-              Free. We&apos;ll write your note on a card.{" "}
-              <span className="underline cursor-pointer">Add a note</span>
-            </p>
-          </div>
-        </div>
-
-        <div className="px-6 pb-6 pt-5 border-t border-rule">
-          <div className="flex text-sm text-ink-soft">
-            <span>Subtotal</span>
-            <span className="ml-auto">₹{subtotal}</span>
-          </div>
-          <div className="flex text-sm text-ink-soft mt-1.5">
-            <span>Post (packed in straw)</span>
-            <span className="ml-auto">₹{post}</span>
-          </div>
-          <div className="flex text-lg font-medium mt-3">
-            <span>Total</span>
-            <span className="ml-auto">₹{subtotal + post}</span>
-          </div>
-          <Link
-            href="/checkout"
-            onClick={() => setOpen(false)}
-            className="btn btn-primary btn-block mt-4"
-          >
-            Checkout
-          </Link>
-          <p className="text-xs text-ink-faint mt-3 text-center">
-            Breakages replaced, no questions.
-          </p>
-        </div>
+            <div className="px-6 pb-6 pt-5 border-t border-rule">
+              <div className="flex text-sm text-ink-soft">
+                <span>Subtotal</span>
+                <span className="ml-auto">₹{subtotal}</span>
+              </div>
+              <div className="flex text-sm text-ink-soft mt-1.5">
+                <span>Post (packed in straw)</span>
+                <span className="ml-auto">₹{POSTAGE}</span>
+              </div>
+              <div className="flex text-lg font-medium mt-3">
+                <span>Total</span>
+                <span className="ml-auto">₹{total}</span>
+              </div>
+              <Link
+                href="/checkout"
+                onClick={() => setOpen(false)}
+                className="btn btn-primary btn-block mt-4"
+              >
+                Checkout
+                <ArrowRight size={16} strokeWidth={1.8} aria-hidden />
+              </Link>
+              <p className="text-xs text-ink-faint mt-3 text-center">
+                Breakages replaced, no questions.
+              </p>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

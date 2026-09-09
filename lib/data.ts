@@ -21,25 +21,25 @@ const SARAUTILE_GLAZES: Glaze[] = [
     name: "Ember",
     hex: "#c67139",
     desc: "rusty, pools dark in the ridges",
-    shot: "mug — ember glaze, 3/4 view",
+    shot: "mug - ember glaze, 3/4 view",
   },
   {
     name: "Bracken",
     hex: "#7a8a5e",
     desc: "dry sage, matte where it thins",
-    shot: "mug — bracken glaze, 3/4 view",
+    shot: "mug - bracken glaze, 3/4 view",
   },
   {
     name: "Oat Milk",
     hex: "#eee7db",
     desc: "soft off-white, speckled",
-    shot: "mug — oat milk glaze, 3/4 view",
+    shot: "mug - oat milk glaze, 3/4 view",
   },
   {
     name: "Salt Ash",
     hex: "#82796a",
     desc: "grey-brown, wood-fired look",
-    shot: "mug — salt ash glaze, 3/4 view",
+    shot: "mug - salt ash glaze, 3/4 view",
   },
 ];
 
@@ -102,7 +102,7 @@ export const mugs: Mug[] = [
     note: "10 oz, unglazed foot",
     left: "7 left",
     photoLabel: "fieldstone mug",
-    glazes: [{ name: "Fieldstone", hex: "#c0b6a5", desc: "pale stone, unglazed foot", shot: "mug — fieldstone glaze, 3/4 view" }],
+    glazes: [{ name: "Fieldstone", hex: "#c0b6a5", desc: "pale stone, unglazed foot", shot: "mug - fieldstone glaze, 3/4 view" }],
   },
   {
     slug: "bracken-low-mug",
@@ -171,13 +171,8 @@ export const specs = [
   { k: "Holds", v: "12 oz / 350 ml to the rim" },
   { k: "Body", v: "Grey stoneware, fired to 1240°C" },
   { k: "Dishwasher", v: "Yes. Microwave too." },
-  { k: "Weight", v: "About 340 g — varies a bit" },
+  { k: "Weight", v: "About 340 g - varies a bit" },
   { k: "Made", v: "Kiln 41, August 2026, India" },
-];
-
-export const cartLines = [
-  { name: "Sarautile Mug", glaze: "Ember", price: 1150, qty: 1 },
-  { name: "Sarautile Mug", glaze: "Bracken", price: 1050, qty: 1 },
 ];
 
 export const timeline = [
@@ -221,7 +216,7 @@ export const care = [
   {
     q: "Straight from the fridge to boiling water?",
     verdict: "Don’t",
-    a: "Sudden temperature swings can crack stoneware. Rinse it warm first — that is all it needs.",
+    a: "Sudden temperature swings can crack stoneware. Rinse it warm first - that is all it needs.",
     tagBg: "var(--warn-bg)",
     tagFg: "var(--warn-ink)",
   },
@@ -243,7 +238,7 @@ export const care = [
 
 export const wholesaleFacts = [
   { k: "Minimum", v: "24 mugs per order" },
-  { k: "Lead time", v: "6–8 weeks from deposit" },
+  { k: "Lead time", v: "6-8 weeks from deposit" },
   { k: "Trade price", v: "50% of retail, 24+" },
   { k: "Custom glaze", v: "Possible at 100+, adds 3 weeks" },
   { k: "Stamp", v: "Your mark on the base, no charge" },

@@ -1,9 +1,10 @@
+import { ArrowUpDown, Tag } from "lucide-react";
 import MugCard from "@/components/MugCard";
 import { glazeFilters, mugs } from "@/lib/data";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "All the mugs — Sarautile Ceramics",
+  title: "All the mugs - Sarautile Ceramics",
 };
 
 export default function MugsPage() {
@@ -13,7 +14,7 @@ export default function MugsPage() {
         <div>
           <h1 className="display-2">All the mugs</h1>
           <p className="lede text-[0.95rem] mt-3">
-            Twelve in stock today. Filter by glaze — the colours are
+            Twelve in stock today. Filter by glaze - the colours are
             hand-mixed so no two batches match exactly.
           </p>
         </div>
@@ -51,7 +52,8 @@ export default function MugsPage() {
         </div>
 
         <div className="card bg-sage-bg border-transparent p-5">
-          <h4 className="display-3 text-[1.05rem] text-sage-ink">
+          <h4 className="flex items-center gap-2 display-3 text-[1.05rem] text-sage-ink">
+            <Tag size={16} strokeWidth={1.7} aria-hidden />
             Seconds shelf
           </h4>
           <p className="text-xs leading-relaxed text-sage-ink-soft mt-2">
@@ -64,7 +66,10 @@ export default function MugsPage() {
       <div>
         <div className="flex items-center gap-3 mb-8 text-sm text-ink-soft">
           <span>{mugs.length} mugs</span>
-          <span className="ml-auto">Sort: newest firing</span>
+          <span className="ml-auto inline-flex items-center gap-1.5">
+            <ArrowUpDown size={13} strokeWidth={1.7} aria-hidden />
+            Sort: newest firing
+          </span>
         </div>
         <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
           {mugs.map((mug) => (
