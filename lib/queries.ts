@@ -55,6 +55,18 @@ export async function getMug(slug: string): Promise<Mug | undefined> {
   return (await getMugs()).find((m) => m.slug === slug);
 }
 
+const DEFAULT_HERO_PHOTO_LABEL = "sarautile hero spread";
+
+export async function getSiteSettings(): Promise<{ heroPhotoLabel: string }> {
+  const { data, error } = await getSupabase()
+    .from("site_settings")
+    .select("hero_photo_label")
+    .eq("id", 1)
+    .maybeSingle();
+  if (error) throw error;
+  return { heroPhotoLabel: data?.hero_photo_label ?? DEFAULT_HERO_PHOTO_LABEL };
+}
+
 export type Category = { slug: string; name: string };
 
 export async function getCategories(): Promise<Category[]> {

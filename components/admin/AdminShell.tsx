@@ -12,6 +12,7 @@ import {
   Mail,
   ExternalLink,
   Menu,
+  Settings,
   X,
 } from "lucide-react";
 
@@ -22,6 +23,7 @@ const NAV = [
   { href: "/admin/collections", label: "Collections", Icon: Layers },
   { href: "/admin/orders", label: "Orders", Icon: Receipt },
   { href: "/admin/kiln-signups", label: "Kiln signups", Icon: Mail },
+  { href: "/admin/settings", label: "Settings", Icon: Settings },
 ];
 
 function isActive(pathname: string, href: string) {

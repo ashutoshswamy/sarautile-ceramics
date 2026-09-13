@@ -88,6 +88,22 @@ drop policy if exists "mug_collections are publicly readable" on mug_collections
 create policy "mug_collections are publicly readable" on mug_collections
   for select to anon, authenticated using (true);
 
+-- ---- site settings (public read, only /admin's service-role client can
+-- write - single row, id always 1) ----
+
+create table if not exists site_settings (
+  id int primary key default 1 check (id = 1),
+  hero_photo_label text not null default 'sarautile hero spread',
+  updated_at timestamptz not null default now()
+);
+insert into site_settings (id) values (1) on conflict (id) do nothing;
+
+alter table site_settings enable row level security;
+
+drop policy if exists "site_settings are publicly readable" on site_settings;
+create policy "site_settings are publicly readable" on site_settings
+  for select to anon, authenticated using (true);
+
 -- ---- per-user data (scoped to the signed-in Clerk user) ----
 -- user_id stores the Clerk user id (e.g. "user_2abc...") as plain text.
 

@@ -433,27 +433,6 @@ textarea.field {
   object-position: center;
 }
 
-/* ---- hero copy: smooth load-in ---- */
-@keyframes hero-copy-in {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@media (prefers-reduced-motion: no-preference) {
-  .hero-copy > * {
-    animation: hero-copy-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: calc(var(--i, 0) * 90ms);
-  }
-  .hero-copy > *:nth-child(2) { --i: 1; }
-  .hero-copy > *:nth-child(3) { --i: 2; }
-  .hero-copy > *:nth-child(4) { --i: 3; }
-}
-
 /* model-viewer ships a grey loading bar; the site has its own loader */
 model-viewer::part(default-progress-bar) {
   display: none;
