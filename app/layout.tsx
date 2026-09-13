@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
-import { AuthProvider } from "@/components/AuthContext";
 import { WishlistProvider } from "@/components/WishlistContext";
 import { CartProvider } from "@/components/CartContext";
+import { MugsProvider } from "@/components/MugsContext";
 import Loader from "@/components/Loader";
 import CartDrawer from "@/components/CartDrawer";
 import Header from "@/components/Header";
@@ -25,21 +26,32 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${spaceGrotesk.variable} font-sans`}>
-      <body className="min-h-screen flex flex-col bg-paper text-ink antialiased">
-        <AuthProvider>
-          <WishlistProvider>
-            <CartProvider>
-              <Loader />
-              <Header />
-              <main className="flex-1">{children}</main>
-              <Footer />
-              <BrandWordmark />
-              <CartDrawer />
-            </CartProvider>
-          </WishlistProvider>
-        </AuthProvider>
-      </body>
-    </html>
+    <ClerkProvider
+      appearance={{
+        variables: {
+          colorPrimary: "#ff4f1f",
+          colorBackground: "#ffffff",
+          colorForeground: "#17171a",
+          borderRadius: "0.75rem",
+        },
+      }}
+    >
+      <html lang="en" className={`${spaceGrotesk.variable} font-sans`}>
+        <body className="min-h-screen flex flex-col bg-paper text-ink antialiased">
+          <MugsProvider>
+            <WishlistProvider>
+              <CartProvider>
+                <Loader />
+                <Header />
+                <main className="flex-1">{children}</main>
+                <Footer />
+                <BrandWordmark />
+                <CartDrawer />
+              </CartProvider>
+            </WishlistProvider>
+          </MugsProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

@@ -21,7 +21,7 @@ export default function WishlistButton({
       }}
       aria-pressed={active}
       aria-label={active ? "Remove from wishlist" : "Save to wishlist"}
-      className={`relative z-[1] grid place-items-center w-9 h-9 rounded-full border border-rule bg-paper/85 backdrop-blur-sm text-ink-soft cursor-pointer transition-colors hover:text-terracotta hover:border-rule-strong ${className}`}
+      className={`z-[1] grid place-items-center w-9 h-9 rounded-full border border-rule bg-paper/85 backdrop-blur-sm text-ink-soft cursor-pointer transition-colors hover:text-terracotta hover:border-rule-strong ${className}`}
     >
       <Heart
         size={16}

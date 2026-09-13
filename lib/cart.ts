@@ -1,4 +1,4 @@
-import { findMug, type Mug } from "@/lib/data";
+import type { Mug } from "@/lib/data";
 
 export const POSTAGE = 149;
 
@@ -6,9 +6,10 @@ export type CartLine = { slug: string; glaze: string; qty: number };
 
 export type ResolvedLine = CartLine & { mug: Mug; lineTotal: number };
 
-/** Join stored cart lines to live mug data. Lines for mugs that no longer
- *  exist are dropped. */
-export function resolveCart(lines: CartLine[]) {
+/** Join stored cart lines to live mug data (via the caller's lookup - the
+ *  catalog now comes from Supabase, see MugsContext). Lines for mugs that no
+ *  longer exist are dropped. */
+export function resolveCart(lines: CartLine[], findMug: (slug: string) => Mug | undefined) {
   const items: ResolvedLine[] = [];
   for (const line of lines) {
     const mug = findMug(line.slug);

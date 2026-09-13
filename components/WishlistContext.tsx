@@ -5,12 +5,11 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useRef,
+  useMemo,
   useState,
 } from "react";
-import { load, save } from "@/lib/storage";
-
-const KEY = "sarautile.wishlist";
+import { useUser } from "@clerk/nextjs";
+import { useAuthedSupabase } from "@/lib/useAuthedSupabase";
 
 type WishlistContextValue = {
   slugs: string[];
@@ -22,34 +21,83 @@ type WishlistContextValue = {
 
 const WishlistContext = createContext<WishlistContextValue | null>(null);
 
+const logIfError = ({ error }: { error: unknown }) => {
+  if (error) console.error("wishlist sync failed:", error);
+};
+
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
+  const { user, isLoaded } = useUser();
+  const supabase = useAuthedSupabase();
   const [slugs, setSlugs] = useState<string[]>([]);
 
-  const first = useRef(true);
+  // Wishlist lives in Supabase per signed-in user - `slugs` exposed below is
+  // forced to [] when signed out, so there's no stale state to clear here.
   useEffect(() => {
-    if (first.current) {
-      first.current = false;
-      setSlugs(load<string[]>(KEY, []));
-      return;
-    }
-    save(KEY, slugs);
-  }, [slugs]);
+    if (!isLoaded || !user) return;
+    let cancelled = false;
+    supabase
+      .from("wishlist_items")
+      .select("mug_slug")
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) return console.error("wishlist load failed:", error);
+        setSlugs((data ?? []).map((r) => r.mug_slug));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoaded, user, supabase]);
 
-  const has = useCallback((slug: string) => slugs.includes(slug), [slugs]);
+  const visibleSlugs = useMemo(() => (user ? slugs : []), [user, slugs]);
+  const has = useCallback(
+    (slug: string) => visibleSlugs.includes(slug),
+    [visibleSlugs]
+  );
 
-  const toggle = useCallback((slug: string) => {
-    setSlugs((prev) =>
-      prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]
-    );
-  }, []);
+  // Signed-out tap is a no-op rather than a redirect - the heart is a small,
+  // low-commitment action scattered across product grids, not worth bouncing
+  // someone off the page they're browsing.
+  const toggle = useCallback(
+    (slug: string) => {
+      if (!user) return;
+      setSlugs((prev) => {
+        const has = prev.includes(slug);
+        if (has) {
+          supabase
+            .from("wishlist_items")
+            .delete()
+            .eq("user_id", user.id)
+            .eq("mug_slug", slug)
+            .then(logIfError);
+          return prev.filter((s) => s !== slug);
+        }
+        supabase
+          .from("wishlist_items")
+          .insert({ user_id: user.id, mug_slug: slug })
+          .then(logIfError);
+        return [...prev, slug];
+      });
+    },
+    [user, supabase]
+  );
 
-  const remove = useCallback((slug: string) => {
-    setSlugs((prev) => prev.filter((s) => s !== slug));
-  }, []);
+  const remove = useCallback(
+    (slug: string) => {
+      if (!user) return;
+      setSlugs((prev) => prev.filter((s) => s !== slug));
+      supabase
+        .from("wishlist_items")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("mug_slug", slug)
+        .then(logIfError);
+    },
+    [user, supabase]
+  );
 
   return (
     <WishlistContext.Provider
-      value={{ slugs, count: slugs.length, has, toggle, remove }}
+      value={{ slugs: visibleSlugs, count: visibleSlugs.length, has, toggle, remove }}
     >
       {children}
     </WishlistContext.Provider>

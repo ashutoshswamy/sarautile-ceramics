@@ -5,10 +5,12 @@ import Link from "next/link";
 import { X, Trash2, Gift, ArrowRight, ShoppingBag } from "lucide-react";
 import PlaceholderPhoto from "@/components/PlaceholderPhoto";
 import { useCart } from "@/components/CartContext";
+import { useMugs } from "@/components/MugsContext";
 import { resolveCart, POSTAGE } from "@/lib/cart";
 
 export default function CartDrawer() {
   const { open, setOpen, lines, setQty, remove } = useCart();
+  const { findMug } = useMugs();
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
 
@@ -52,7 +54,7 @@ export default function CartDrawer() {
 
   if (!mounted) return null;
 
-  const { items, subtotal, count } = resolveCart(lines);
+  const { items, subtotal, count } = resolveCart(lines, findMug);
   const total = subtotal + (items.length ? POSTAGE : 0);
 
   return (

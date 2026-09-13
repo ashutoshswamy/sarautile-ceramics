@@ -1,3 +1,7 @@
+// Product catalog (mugs + glazes) now lives in Supabase - see lib/queries.ts.
+// This file keeps the shared types plus static editorial copy that isn't
+// catalog data (story, timeline, care, wholesale terms).
+
 export type Glaze = {
   name: string;
   hex: string;
@@ -13,138 +17,9 @@ export type Mug = {
   note: string;
   left: string;
   photoLabel: string;
+  categorySlug: string | null;
   glazes: Glaze[];
 };
-
-const SARAUTILE_GLAZES: Glaze[] = [
-  {
-    name: "Ember",
-    hex: "#c67139",
-    desc: "rusty, pools dark in the ridges",
-    shot: "mug - ember glaze, 3/4 view",
-  },
-  {
-    name: "Bracken",
-    hex: "#7a8a5e",
-    desc: "dry sage, matte where it thins",
-    shot: "mug - bracken glaze, 3/4 view",
-  },
-  {
-    name: "Oat Milk",
-    hex: "#eee7db",
-    desc: "soft off-white, speckled",
-    shot: "mug - oat milk glaze, 3/4 view",
-  },
-  {
-    name: "Salt Ash",
-    hex: "#82796a",
-    desc: "grey-brown, wood-fired look",
-    shot: "mug - salt ash glaze, 3/4 view",
-  },
-];
-
-export const mugs: Mug[] = [
-  {
-    slug: "sarautile-mug",
-    name: "The Sarautile Mug",
-    price: 1150,
-    oz: 12,
-    note: "12 oz, wheel-thrown",
-    left: "4 left",
-    photoLabel: "ember mug",
-    glazes: SARAUTILE_GLAZES,
-  },
-  {
-    slug: "bracken-mug",
-    name: "Bracken",
-    price: 1150,
-    oz: 12,
-    note: "12 oz, wheel-thrown",
-    left: "6 left",
-    photoLabel: "bracken mug",
-    glazes: [SARAUTILE_GLAZES[1]],
-  },
-  {
-    slug: "oat-milk-mug",
-    name: "Oat Milk",
-    price: 1050,
-    oz: 8,
-    note: "8 oz, speckled body",
-    left: "2 left",
-    photoLabel: "oat milk mug",
-    glazes: [SARAUTILE_GLAZES[2]],
-  },
-  {
-    slug: "salt-ash-mug",
-    name: "Salt Ash",
-    price: 1250,
-    oz: 12,
-    note: "12 oz, heavy base",
-    left: "3 left",
-    photoLabel: "salt ash mug",
-    glazes: [SARAUTILE_GLAZES[3]],
-  },
-  {
-    slug: "ember-tall-mug",
-    name: "Ember Tall",
-    price: 1350,
-    oz: 14,
-    note: "14 oz, for tea drinkers",
-    left: "5 left",
-    photoLabel: "ember tall mug",
-    glazes: [SARAUTILE_GLAZES[0]],
-  },
-  {
-    slug: "fieldstone-mug",
-    name: "Fieldstone",
-    price: 1050,
-    oz: 10,
-    note: "10 oz, unglazed foot",
-    left: "7 left",
-    photoLabel: "fieldstone mug",
-    glazes: [{ name: "Fieldstone", hex: "#c0b6a5", desc: "pale stone, unglazed foot", shot: "mug - fieldstone glaze, 3/4 view" }],
-  },
-  {
-    slug: "bracken-low-mug",
-    name: "Bracken Low",
-    price: 950,
-    oz: 8,
-    note: "8 oz, wide rim",
-    left: "4 left",
-    photoLabel: "bracken low mug",
-    glazes: [SARAUTILE_GLAZES[1]],
-  },
-  {
-    slug: "milk-tooth-mug",
-    name: "Milk Tooth",
-    price: 1050,
-    oz: 10,
-    note: "10 oz, glossy inside",
-    left: "1 left",
-    photoLabel: "milk tooth mug",
-    glazes: [SARAUTILE_GLAZES[2]],
-  },
-  {
-    slug: "seconds-shelf-mug",
-    name: "Seconds",
-    price: 550,
-    oz: 10,
-    note: "wonky, perfectly usable",
-    left: "9 left",
-    photoLabel: "seconds shelf mug",
-    glazes: [{ name: "Mixed", hex: "#c0b6a5", desc: "whatever came off the shelf", shot: "seconds shelf mug" }],
-  },
-];
-
-export const featuredMugs = mugs.slice(0, 4);
-
-export const glazeFilters = [
-  { name: "Ember", hex: "#c67139", count: 4 },
-  { name: "Bracken", hex: "#7a8a5e", count: 3 },
-  { name: "Oat Milk", hex: "#eee7db", count: 2 },
-  { name: "Salt Ash", hex: "#82796a", count: 2 },
-  { name: "Fieldstone", hex: "#c0b6a5", count: 1 },
-];
 
 export const storyBits = [
   {
@@ -243,7 +118,3 @@ export const wholesaleFacts = [
   { k: "Custom glaze", v: "Possible at 100+, adds 3 weeks" },
   { k: "Stamp", v: "Your mark on the base, no charge" },
 ];
-
-export function findMug(slug: string): Mug | undefined {
-  return mugs.find((m) => m.slug === slug);
-}

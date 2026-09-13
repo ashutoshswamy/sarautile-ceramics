@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 import { Lock, ShieldCheck, Truck, Zap, Store, PartyPopper } from "lucide-react";
 import PlaceholderPhoto from "@/components/PlaceholderPhoto";
 import { useCart } from "@/components/CartContext";
+import { useMugs } from "@/components/MugsContext";
+import { useAuthedSupabase } from "@/lib/useAuthedSupabase";
 import { resolveCart, POSTAGE } from "@/lib/cart";
 
 const SHIP = [
@@ -14,10 +17,83 @@ const SHIP = [
 ];
 
 export default function CheckoutPage() {
+  const { user } = useUser();
   const { lines, clear } = useCart();
+  const { findMug } = useMugs();
+  const supabase = useAuthedSupabase();
   const [placed, setPlaced] = useState(false);
-  const { items, subtotal, count } = resolveCart(lines);
+  const [placing, setPlacing] = useState(false);
+  const [error, setError] = useState("");
+  const { items, subtotal, count } = resolveCart(lines, findMug);
   const total = subtotal + POSTAGE;
+
+  async function placeOrder(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!user) return;
+    setError("");
+    setPlacing(true);
+
+    const data = new FormData(e.currentTarget);
+    const { data: order, error: orderErr } = await supabase
+      .from("orders")
+      .insert({
+        user_id: user.id,
+        email: data.get("email"),
+        first_name: data.get("firstName"),
+        last_name: data.get("lastName"),
+        address: data.get("address"),
+        city: data.get("city"),
+        state: data.get("state"),
+        pin: data.get("pin"),
+        shipping_method: SHIP[0].label,
+        note: data.get("note") || null,
+        subtotal,
+        postage: POSTAGE,
+        total,
+      })
+      .select("id")
+      .single();
+
+    if (orderErr || !order) {
+      setError("Couldn't place the order - try again in a moment.");
+      setPlacing(false);
+      return;
+    }
+
+    const { error: itemsErr } = await supabase.from("order_items").insert(
+      items.map((item) => ({
+        order_id: order.id,
+        user_id: user.id,
+        mug_slug: item.slug,
+        glaze: item.glaze,
+        qty: item.qty,
+        unit_price: item.mug.price,
+      }))
+    );
+    if (itemsErr) {
+      setError("Couldn't place the order - try again in a moment.");
+      setPlacing(false);
+      return;
+    }
+
+    clear();
+    setPlacing(false);
+    setPlaced(true);
+  }
+
+  if (!user) {
+    return (
+      <div className="container-x section-tight max-w-[520px] text-center flex flex-col items-center gap-4">
+        <h1 className="display-2">Sign in to check out</h1>
+        <p className="lede text-[0.95rem]">
+          Orders are tied to your account so you can find them again later.
+        </p>
+        <Link href="/signin" className="btn btn-primary mt-2">
+          Sign in
+        </Link>
+      </div>
+    );
+  }
 
   if (placed) {
     return (
@@ -25,7 +101,7 @@ export default function CheckoutPage() {
         <PartyPopper size={30} strokeWidth={1.5} className="text-terracotta" />
         <h1 className="display-2">Order placed</h1>
         <p className="lede text-[0.95rem]">
-          We'll email you when it comes out of the kiln. Usually within the
+          We&apos;ll email you when it comes out of the kiln. Usually within the
           fortnight.
         </p>
         <Link href="/mugs" className="btn btn-primary mt-2">
@@ -58,42 +134,43 @@ export default function CheckoutPage() {
       </div>
 
       <div className="grid gap-10 md:grid-cols-[1.15fr_.85fr] py-10 lg:gap-14">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            clear();
-            setPlaced(true);
-          }}
-        >
+        <form onSubmit={placeOrder}>
           <h1 className="display-3 text-[1.5rem]">Where&apos;s it going?</h1>
           <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3.5 mt-5">
             <label className="field-label col-span-2">
               Email
-              <input type="email" required placeholder="you@wherever.com" className="field" />
+              <input
+                name="email"
+                type="email"
+                required
+                defaultValue={user.primaryEmailAddress?.emailAddress}
+                placeholder="you@wherever.com"
+                className="field"
+              />
             </label>
             <label className="field-label">
               First name
-              <input required className="field" />
+              <input name="firstName" required className="field" />
             </label>
             <label className="field-label">
               Last name
-              <input required className="field" />
+              <input name="lastName" required className="field" />
             </label>
             <label className="field-label col-span-2">
               Address
-              <input required className="field" />
+              <input name="address" required className="field" />
             </label>
             <label className="field-label">
               City
-              <input required className="field" />
+              <input name="city" required className="field" />
             </label>
             <label className="field-label">
               State
-              <input required className="field" />
+              <input name="state" required className="field" />
             </label>
             <label className="field-label col-span-2">
               PIN code
-              <input required className="field" />
+              <input name="pin" required className="field" />
             </label>
           </div>
 
@@ -126,14 +203,23 @@ export default function CheckoutPage() {
           <label className="field-label mt-8">
             Note on the card (optional)
             <textarea
+              name="note"
               placeholder="Happy birthday, drink something nice out of this."
               className="field"
             />
           </label>
 
-          <button type="submit" className="btn btn-primary btn-block mt-8 h-[3.25rem] text-base">
+          {error && (
+            <p className="text-sm text-warn-ink mt-4">{error}</p>
+          )}
+
+          <button
+            type="submit"
+            disabled={placing}
+            className="btn btn-primary btn-block mt-8 h-[3.25rem] text-base disabled:opacity-60"
+          >
             <Lock size={16} strokeWidth={1.8} aria-hidden />
-            Pay ₹{total}
+            {placing ? "Placing order…" : `Pay ₹${total}`}
           </button>
         </form>
 

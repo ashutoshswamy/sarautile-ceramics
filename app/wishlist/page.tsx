@@ -1,19 +1,37 @@
 "use client";
 
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 import { Heart, ShoppingBag, X } from "lucide-react";
 import PlaceholderPhoto from "@/components/PlaceholderPhoto";
 import { useWishlist } from "@/components/WishlistContext";
 import { useCart } from "@/components/CartContext";
-import { findMug } from "@/lib/data";
+import { useMugs } from "@/components/MugsContext";
 
 export default function WishlistPage() {
+  const { user } = useUser();
   const { slugs, remove } = useWishlist();
   const { add, setOpen } = useCart();
+  const { findMug } = useMugs();
 
   const mugs = slugs
     .map((slug) => findMug(slug))
     .filter((m): m is NonNullable<typeof m> => Boolean(m));
+
+  if (!user) {
+    return (
+      <div className="container-x section-tight max-w-[520px] text-center flex flex-col items-center gap-4">
+        <Heart size={22} strokeWidth={1.6} className="text-terracotta" />
+        <h1 className="display-2">Sign in to see your wishlist</h1>
+        <p className="lede text-[0.95rem]">
+          Saved mugs live on your account, so sign in to keep them.
+        </p>
+        <Link href="/signin" className="btn btn-primary mt-2">
+          Sign in
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="container-x section-tight max-w-[900px]">

@@ -6,13 +6,12 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
-import { load, save } from "@/lib/storage";
+import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
+import { useAuthedSupabase } from "@/lib/useAuthedSupabase";
 import type { CartLine } from "@/lib/cart";
-
-const KEY = "sarautile.cart";
 
 type CartContextValue = {
   lines: CartLine[];
@@ -27,60 +26,121 @@ type CartContextValue = {
 
 const CartContext = createContext<CartContextValue | null>(null);
 
-const sameLine = (l: CartLine, slug: string, glaze: string) =>
-  l.slug === slug && l.glaze === glaze;
+const logIfError = ({ error }: { error: unknown }) => {
+  if (error) console.error("cart sync failed:", error);
+};
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
+  const { user, isLoaded } = useUser();
+  const supabase = useAuthedSupabase();
+  const router = useRouter();
   const [lines, setLines] = useState<CartLine[]>([]);
   const [open, setOpen] = useState(false);
 
-  // first run hydrates from localStorage; subsequent runs persist.
-  const first = useRef(true);
+  // Cart lives in Supabase per signed-in user - nothing to load when signed
+  // out (the `lines` exposed below is forced to [] in that case, so there's
+  // no stale state to clear here).
   useEffect(() => {
-    if (first.current) {
-      first.current = false;
-      setLines(load<CartLine[]>(KEY, []));
-      return;
-    }
-    save(KEY, lines);
-  }, [lines]);
-
-  const add = useCallback((slug: string, glaze: string, qty = 1) => {
-    setLines((prev) => {
-      const hit = prev.find((l) => sameLine(l, slug, glaze));
-      if (hit) {
-        return prev.map((l) =>
-          l === hit ? { ...l, qty: Math.min(9, l.qty + qty) } : l
+    if (!isLoaded || !user) return;
+    let cancelled = false;
+    supabase
+      .from("cart_items")
+      .select("mug_slug, glaze, qty")
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) return console.error("cart load failed:", error);
+        setLines(
+          (data ?? []).map((r) => ({ slug: r.mug_slug, glaze: r.glaze, qty: r.qty }))
         );
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoaded, user, supabase]);
+
+  const add = useCallback(
+    (slug: string, glaze: string, qty = 1) => {
+      if (!user) {
+        router.push("/signin");
+        return;
       }
-      return [...prev, { slug, glaze, qty: Math.min(9, qty) }];
-    });
-  }, []);
-
-  const setQty = useCallback((slug: string, glaze: string, qty: number) => {
-    setLines((prev) =>
-      qty <= 0
-        ? prev.filter((l) => !sameLine(l, slug, glaze))
-        : prev.map((l) =>
-            sameLine(l, slug, glaze) ? { ...l, qty: Math.min(9, qty) } : l
+      setLines((prev) => {
+        const hit = prev.find((l) => l.slug === slug && l.glaze === glaze);
+        const nextQty = Math.min(9, (hit?.qty ?? 0) + qty);
+        supabase
+          .from("cart_items")
+          .upsert(
+            { user_id: user.id, mug_slug: slug, glaze, qty: nextQty },
+            { onConflict: "user_id,mug_slug,glaze" }
           )
-    );
-  }, []);
+          .then(logIfError);
+        return hit
+          ? prev.map((l) => (l === hit ? { ...l, qty: nextQty } : l))
+          : [...prev, { slug, glaze, qty: nextQty }];
+      });
+    },
+    [user, supabase, router]
+  );
 
-  const remove = useCallback((slug: string, glaze: string) => {
-    setLines((prev) => prev.filter((l) => !sameLine(l, slug, glaze)));
-  }, []);
+  const setQty = useCallback(
+    (slug: string, glaze: string, qty: number) => {
+      if (!user) return;
+      if (qty <= 0) {
+        setLines((prev) => prev.filter((l) => !(l.slug === slug && l.glaze === glaze)));
+        supabase
+          .from("cart_items")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("mug_slug", slug)
+          .eq("glaze", glaze)
+          .then(logIfError);
+        return;
+      }
+      const clamped = Math.min(9, qty);
+      setLines((prev) =>
+        prev.map((l) => (l.slug === slug && l.glaze === glaze ? { ...l, qty: clamped } : l))
+      );
+      supabase
+        .from("cart_items")
+        .update({ qty: clamped })
+        .eq("user_id", user.id)
+        .eq("mug_slug", slug)
+        .eq("glaze", glaze)
+        .then(logIfError);
+    },
+    [user, supabase]
+  );
 
-  const clear = useCallback(() => setLines([]), []);
+  const remove = useCallback(
+    (slug: string, glaze: string) => {
+      if (!user) return;
+      setLines((prev) => prev.filter((l) => !(l.slug === slug && l.glaze === glaze)));
+      supabase
+        .from("cart_items")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("mug_slug", slug)
+        .eq("glaze", glaze)
+        .then(logIfError);
+    },
+    [user, supabase]
+  );
 
+  const clear = useCallback(() => {
+    if (!user) return;
+    setLines([]);
+    supabase.from("cart_items").delete().eq("user_id", user.id).then(logIfError);
+  }, [user, supabase]);
+
+  const visibleLines = useMemo(() => (user ? lines : []), [user, lines]);
   const count = useMemo(
-    () => lines.reduce((n, l) => n + l.qty, 0),
-    [lines]
+    () => visibleLines.reduce((n, l) => n + l.qty, 0),
+    [visibleLines]
   );
 
   return (
     <CartContext.Provider
-      value={{ lines, count, add, setQty, remove, clear, open, setOpen }}
+      value={{ lines: visibleLines, count, add, setQty, remove, clear, open, setOpen }}
     >
       {children}
     </CartContext.Provider>

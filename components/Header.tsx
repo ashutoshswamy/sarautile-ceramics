@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Heart, Home, Menu, ShoppingCart, User, X } from "lucide-react";
+import { Heart, LayoutGrid, Menu, ShoppingCart, User, X } from "lucide-react";
+import { useUser, UserButton } from "@clerk/nextjs";
 import { useCart } from "@/components/CartContext";
 import { useWishlist } from "@/components/WishlistContext";
-import { useAuth } from "@/components/AuthContext";
 import { MugIcon, StoryIcon, CareIcon, WholesaleIcon } from "@/components/icons";
-
-// ponytail: header is always shown now - the old hero-scroll-gated hide went with the scroll sequence.
 
 const NAV = [
   { href: "/mugs", label: "Mugs", Icon: MugIcon },
@@ -29,56 +27,27 @@ function Badge({ n }: { n: number }) {
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
-  // `scrolled` = target layout (top pill vs. right rail). `fading` briefly hides
-  // the bar so the layout swap (flex-direction / writing-mode can't tween) reads
-  // as a crossfade instead of a snap.
-  const [scrolled, setScrolled] = useState(false);
-  const [fading, setFading] = useState(false);
-  const scrolledRef = useRef(false);
   const pathname = usePathname();
 
   const { count: cartCount, setOpen: setCartOpen } = useCart();
   const { count: wishCount } = useWishlist();
-  const { user } = useAuth();
+  const { user } = useUser();
+  const isAdmin = user?.publicMetadata?.role === "admin";
 
   useEffect(() => setMenuOpen(false), [pathname]);
-
-  useEffect(() => {
-    let swap: ReturnType<typeof setTimeout>;
-    const onScroll = () => {
-      // hysteresis so it doesn't flicker while hovering the threshold
-      const y = window.scrollY;
-      const next = scrolledRef.current ? y > 24 : y > 56;
-      if (next === scrolledRef.current) return;
-      scrolledRef.current = next;
-      setFading(true);
-      clearTimeout(swap);
-      swap = setTimeout(() => {
-        setScrolled(next);
-        setFading(false);
-      }, 170);
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      clearTimeout(swap);
-    };
-  }, []);
 
   const iconBtn =
     "relative shrink-0 grid place-items-center w-9 h-9 rounded-full border border-rule-strong text-ink cursor-pointer transition-colors hover:border-ink";
 
   return (
-    <header className="site-header" data-scrolled={scrolled} data-fading={fading}>
+    <header className="site-header">
       <div className="container-x flex items-center gap-4 sm:gap-6 h-16">
         <Link
           href="/"
           aria-label="Sarautile Ceramics - home"
           className="site-logo mr-auto text-[1.05rem] sm:text-lg font-medium tracking-tight text-ink no-underline whitespace-nowrap transition-opacity hover:opacity-70"
         >
-          <span className="nav-label">Sarautile Ceramics</span>
-          <Home size={19} strokeWidth={1.6} className="site-logo__mark" />
+          Sarautile Ceramics
         </Link>
 
         <nav className="hidden sm:flex items-center gap-7">
@@ -89,29 +58,28 @@ export default function Header() {
               className="nav-link inline-flex items-center gap-2 text-sm text-ink-soft no-underline transition-colors hover:text-ink"
             >
               <item.Icon size={18} strokeWidth={1.6} className="shrink-0 text-ink-faint" />
-              <span className="nav-label">{item.label}</span>
+              <span>{item.label}</span>
             </Link>
           ))}
         </nav>
 
         <div className="header-actions hidden sm:flex items-center gap-2">
+          {isAdmin && (
+            <Link href="/admin" aria-label="Admin" className={iconBtn}>
+              <LayoutGrid size={16} strokeWidth={1.6} />
+            </Link>
+          )}
           <Link href="/wishlist" aria-label="Wishlist" className={iconBtn}>
             <Heart size={16} strokeWidth={1.6} />
             <Badge n={wishCount} />
           </Link>
-          <Link
-            href="/signin"
-            aria-label={user ? "Account" : "Sign in"}
-            className={iconBtn}
-          >
-            {user ? (
-              <span className="text-xs font-semibold uppercase">
-                {user.name.slice(0, 1)}
-              </span>
-            ) : (
+          {user ? (
+            <UserButton />
+          ) : (
+            <Link href="/signin" aria-label="Sign in" className={iconBtn}>
               <User size={16} strokeWidth={1.6} />
-            )}
-          </Link>
+            </Link>
+          )}
           <button
             onClick={() => setCartOpen(true)}
             aria-label="Open cart"
@@ -144,7 +112,9 @@ export default function Header() {
       <nav
         className="sm:hidden overflow-hidden border-t border-rule bg-paper transition-[max-height,opacity] duration-300 ease-out"
         style={{
-          maxHeight: menuOpen ? `${(NAV.length + 2) * 49 + 16}px` : "0px",
+          maxHeight: menuOpen
+            ? `${(NAV.length + 2 + (isAdmin ? 1 : 0)) * 49 + 16}px`
+            : "0px",
           opacity: menuOpen ? 1 : 0,
           borderTopWidth: menuOpen ? 1 : 0,
         }}
@@ -167,13 +137,29 @@ export default function Header() {
             <Heart size={16} className="shrink-0 text-ink-faint" />
             Wishlist{wishCount > 0 ? ` (${wishCount})` : ""}
           </Link>
-          <Link
-            href="/signin"
-            className="flex items-center gap-3 py-3 text-[0.95rem] text-ink no-underline"
-          >
-            <User size={16} className="shrink-0 text-ink-faint" />
-            {user ? user.name : "Sign in"}
-          </Link>
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="flex items-center gap-3 py-3 text-[0.95rem] text-ink no-underline border-b border-rule"
+            >
+              <LayoutGrid size={16} className="shrink-0 text-ink-faint" />
+              Admin
+            </Link>
+          )}
+          {user ? (
+            <div className="flex items-center gap-3 py-3 text-[0.95rem] text-ink">
+              <UserButton />
+              {user.fullName ?? user.primaryEmailAddress?.emailAddress}
+            </div>
+          ) : (
+            <Link
+              href="/signin"
+              className="flex items-center gap-3 py-3 text-[0.95rem] text-ink no-underline"
+            >
+              <User size={16} className="shrink-0 text-ink-faint" />
+              Sign in
+            </Link>
+          )}
         </div>
       </nav>
     </header>
