@@ -7,6 +7,11 @@ import ShopByCategory from "@/components/ShopByCategory";
 import { wholesaleFacts } from "@/lib/data";
 import { getCollection, getCategoriesWithMugs, getGlazeFilters } from "@/lib/queries";
 
+// Same catalog/hero data as /mugs, which is already dynamic - prerendering
+// this at build time made a slow/unreachable Supabase response fail the
+// whole deploy (see "Gateway Timeout" prerendering "/").
+export const dynamic = "force-dynamic";
+
 const VALUES = [
   {
     Icon: Palette,
