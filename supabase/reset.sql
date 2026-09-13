@@ -17,3 +17,6 @@ drop table if exists mugs cascade;
 drop table if exists collections cascade;
 drop table if exists categories cascade;
 drop table if exists site_settings cascade;
+
+delete from storage.objects where bucket_id = 'hero-images';
+delete from storage.buckets where id = 'hero-images';

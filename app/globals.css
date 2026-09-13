@@ -280,6 +280,31 @@ textarea.field {
   padding-block: 0.75rem;
   resize: vertical;
 }
+input[type="file"].field {
+  padding-inline: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  color: var(--ink-faint);
+  font-size: 0.8125rem;
+}
+input[type="file"].field::file-selector-button {
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--ink);
+  background: var(--canvas);
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  margin-inline-end: 0.85rem;
+  cursor: pointer;
+  transition: background 0.16s ease;
+}
+input[type="file"].field::file-selector-button:hover {
+  background: var(--paper-tint);
+}
 .field-label {
   display: flex;
   flex-direction: column;

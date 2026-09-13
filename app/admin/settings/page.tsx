@@ -1,6 +1,5 @@
 import { getSiteSettings } from "@/lib/queries";
-import SubmitButton from "@/components/admin/SubmitButton";
-import { updateSiteSettings, resetSiteSettings } from "./actions";
+import HeroSettingsForm from "@/components/admin/HeroSettingsForm";
 
 export default async function AdminSettingsPage() {
   const settings = await getSiteSettings();
@@ -8,29 +7,18 @@ export default async function AdminSettingsPage() {
   return (
     <div className="max-w-[560px]">
       <h1 className="display-2">Settings</h1>
-      <p className="lede text-[0.95rem] mt-2">Controls for the storefront hero.</p>
+      <p className="lede text-[0.95rem] mt-2">
+        Set the storefront hero image per screen size, with a live preview. Leave a field
+        blank to fall back to the default photo.
+      </p>
 
-      <form action={updateSiteSettings} className="flex flex-col gap-4 mt-8">
-        <label className="field-label">
-          Hero photo label (picks a stock photo deterministically)
-          <input
-            name="hero_photo_label"
-            defaultValue={settings.heroPhotoLabel}
-            required
-            className="field"
-          />
-        </label>
-        <SubmitButton>Save changes</SubmitButton>
-      </form>
-
-      <form action={resetSiteSettings} className="mt-4">
-        <button
-          type="submit"
-          className="text-sm text-ink-faint cursor-pointer transition-colors hover:text-warn-ink"
-        >
-          Reset to default
-        </button>
-      </form>
+      <HeroSettingsForm
+        initial={{
+          hero_image_mobile: settings.heroImageMobile ?? "",
+          hero_image_tablet: settings.heroImageTablet ?? "",
+          hero_image_desktop: settings.heroImageDesktop ?? "",
+        }}
+      />
     </div>
   );
 }

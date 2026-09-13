@@ -93,16 +93,32 @@ create policy "mug_collections are publicly readable" on mug_collections
 
 create table if not exists site_settings (
   id int primary key default 1 check (id = 1),
-  hero_photo_label text not null default 'sarautile hero spread',
+  hero_image_mobile text,
+  hero_image_tablet text,
+  hero_image_desktop text,
   updated_at timestamptz not null default now()
 );
 insert into site_settings (id) values (1) on conflict (id) do nothing;
+
+-- Patches a `site_settings` table from before the per-breakpoint hero image
+-- fields replaced the single stock-photo label.
+alter table site_settings drop column if exists hero_photo_label;
+alter table site_settings add column if not exists hero_image_mobile text;
+alter table site_settings add column if not exists hero_image_tablet text;
+alter table site_settings add column if not exists hero_image_desktop text;
 
 alter table site_settings enable row level security;
 
 drop policy if exists "site_settings are publicly readable" on site_settings;
 create policy "site_settings are publicly readable" on site_settings
   for select to anon, authenticated using (true);
+
+-- ---- storage: hero images (public bucket, only /admin's service-role
+-- client uploads - same trust model as every other admin write above) ----
+
+insert into storage.buckets (id, name, public)
+values ('hero-images', 'hero-images', true)
+on conflict (id) do nothing;
 
 -- ---- per-user data (scoped to the signed-in Clerk user) ----
 -- user_id stores the Clerk user id (e.g. "user_2abc...") as plain text.
