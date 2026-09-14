@@ -12,6 +12,7 @@ export default async function MugsPage(props: PageProps<"/mugs">) {
   const searchParams = await props.searchParams;
   const categorySlug =
     typeof searchParams.category === "string" ? searchParams.category : undefined;
+  const query = typeof searchParams.q === "string" ? searchParams.q.trim() : "";
 
   const [allMugs, glazeFilters, categories] = await Promise.all([
     getMugs(),
@@ -20,17 +21,25 @@ export default async function MugsPage(props: PageProps<"/mugs">) {
   ]);
 
   const activeCategory = categories.find((c) => c.slug === categorySlug);
-  const mugs = activeCategory
+  let mugs = activeCategory
     ? allMugs.filter((m) => m.categorySlug === activeCategory.slug)
     : allMugs;
+  if (query) {
+    const q = query.toLowerCase();
+    mugs = mugs.filter(
+      (m) => m.name.toLowerCase().includes(q) || m.note.toLowerCase().includes(q)
+    );
+  }
 
   return (
     <div className="container-x section-tight grid gap-10 md:grid-cols-[236px_1fr] lg:gap-14">
       <aside className="flex flex-col gap-8 md:sticky md:top-20 md:self-start">
         <div>
-          <h1 className="display-2">{activeCategory?.name ?? "All the mugs"}</h1>
+          <h1 className="display-2">
+            {query ? `Results for "${query}"` : (activeCategory?.name ?? "All the mugs")}
+          </h1>
           <p className="lede text-[0.95rem] mt-3">
-            {allMugs.length} in the catalog today.
+            {query ? `${mugs.length} matching` : `${allMugs.length} in the catalog today.`}
           </p>
         </div>
 
@@ -94,11 +103,13 @@ export default async function MugsPage(props: PageProps<"/mugs">) {
           <div className="card p-8 flex flex-col items-start gap-3">
             <Coffee size={22} strokeWidth={1.6} className="text-terracotta" />
             <p className="lede text-[0.95rem]">
-              {activeCategory
-                ? `Nothing in ${activeCategory.name} yet.`
-                : "Nothing in the shop yet - check back soon."}
+              {query
+                ? `No mugs match "${query}".`
+                : activeCategory
+                  ? `Nothing in ${activeCategory.name} yet.`
+                  : "Nothing in the shop yet - check back soon."}
             </p>
-            {activeCategory && (
+            {(activeCategory || query) && (
               <Link href="/mugs" className="btn btn-ghost mt-1">
                 See all mugs
               </Link>

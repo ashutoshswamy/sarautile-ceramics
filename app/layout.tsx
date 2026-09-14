@@ -8,8 +8,7 @@ import { MugsProvider } from "@/components/MugsContext";
 import Loader from "@/components/Loader";
 import CartDrawer from "@/components/CartDrawer";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import BrandWordmark from "@/components/BrandWordmark";
+import SiteFooter from "@/components/SiteFooter";
 
 const spaceGrotesk = Space_Grotesk({
   weight: ["400", "500", "600", "700"],
@@ -44,8 +43,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 <Loader />
                 <Header />
                 <main className="flex-1">{children}</main>
-                <Footer />
-                <BrandWordmark />
+                <SiteFooter />
                 <CartDrawer />
               </CartProvider>
             </WishlistProvider>

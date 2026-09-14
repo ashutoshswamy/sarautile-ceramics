@@ -34,6 +34,13 @@ async function resolveImageUrl(
   return (formData.get(`hero_image_${breakpoint}`) as string) || null;
 }
 
+function resolvePosition(formData: FormData, breakpoint: (typeof BREAKPOINTS)[number]): string {
+  const x = Number(formData.get(`hero_image_${breakpoint}_position_x`));
+  const y = Number(formData.get(`hero_image_${breakpoint}_position_y`));
+  const clamp = (n: number) => (Number.isFinite(n) ? Math.min(100, Math.max(0, n)) : 50);
+  return `${clamp(x)}% ${clamp(y)}%`;
+}
+
 export async function updateSiteSettings(formData: FormData) {
   await requireAdmin();
   const supabase = getSupabaseAdmin();
@@ -48,6 +55,9 @@ export async function updateSiteSettings(formData: FormData) {
       hero_image_mobile: mobile,
       hero_image_tablet: tablet,
       hero_image_desktop: desktop,
+      hero_image_mobile_position: resolvePosition(formData, "mobile"),
+      hero_image_tablet_position: resolvePosition(formData, "tablet"),
+      hero_image_desktop_position: resolvePosition(formData, "desktop"),
       updated_at: new Date().toISOString(),
     })
     .eq("id", 1);
@@ -63,6 +73,9 @@ export async function resetSiteSettings() {
       hero_image_mobile: null,
       hero_image_tablet: null,
       hero_image_desktop: null,
+      hero_image_mobile_position: "50% 50%",
+      hero_image_tablet_position: "50% 50%",
+      hero_image_desktop_position: "50% 50%",
       updated_at: new Date().toISOString(),
     })
     .eq("id", 1);

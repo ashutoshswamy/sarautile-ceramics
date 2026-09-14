@@ -59,12 +59,17 @@ export type SiteSettings = {
   heroImageMobile: string | null;
   heroImageTablet: string | null;
   heroImageDesktop: string | null;
+  heroImageMobilePosition: string;
+  heroImageTabletPosition: string;
+  heroImageDesktopPosition: string;
 };
 
 export async function getSiteSettings(): Promise<SiteSettings> {
   const { data, error } = await getSupabase()
     .from("site_settings")
-    .select("hero_image_mobile, hero_image_tablet, hero_image_desktop")
+    .select(
+      "hero_image_mobile, hero_image_tablet, hero_image_desktop, hero_image_mobile_position, hero_image_tablet_position, hero_image_desktop_position"
+    )
     .eq("id", 1)
     .maybeSingle();
   if (error) throw error;
@@ -72,6 +77,9 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     heroImageMobile: data?.hero_image_mobile ?? null,
     heroImageTablet: data?.hero_image_tablet ?? null,
     heroImageDesktop: data?.hero_image_desktop ?? null,
+    heroImageMobilePosition: data?.hero_image_mobile_position ?? "50% 50%",
+    heroImageTabletPosition: data?.hero_image_tablet_position ?? "50% 50%",
+    heroImageDesktopPosition: data?.hero_image_desktop_position ?? "50% 50%",
   };
 }
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Heart, LayoutGrid, Menu, ShoppingCart, User, X } from "lucide-react";
+import { Heart, LayoutGrid, Menu, Search, ShoppingCart, User, X } from "lucide-react";
 import { useUser, UserButton } from "@clerk/nextjs";
 import { useCart } from "@/components/CartContext";
 import { useWishlist } from "@/components/WishlistContext";
@@ -63,6 +63,19 @@ export default function Header() {
           ))}
         </nav>
 
+        <form
+          action="/mugs"
+          className="hidden sm:flex items-center gap-2 h-9 rounded-full border border-rule-strong pl-3.5 pr-1.5 transition-colors focus-within:border-ink"
+        >
+          <Search size={14} strokeWidth={1.8} className="text-ink-faint shrink-0" />
+          <input
+            type="search"
+            name="q"
+            placeholder="Search mugs…"
+            className="w-28 md:w-40 bg-transparent text-sm text-ink placeholder:text-ink-faint focus:outline-none"
+          />
+        </form>
+
         <div className="header-actions hidden sm:flex items-center gap-2">
           {isAdmin && (
             <Link href="/admin" aria-label="Admin" className={iconBtn}>
@@ -113,13 +126,25 @@ export default function Header() {
         className="sm:hidden overflow-hidden border-t border-rule bg-paper transition-[max-height,opacity] duration-300 ease-out"
         style={{
           maxHeight: menuOpen
-            ? `${(NAV.length + 2 + (isAdmin ? 1 : 0)) * 49 + 16}px`
+            ? `${(NAV.length + 3 + (isAdmin ? 1 : 0)) * 49 + 16}px`
             : "0px",
           opacity: menuOpen ? 1 : 0,
           borderTopWidth: menuOpen ? 1 : 0,
         }}
       >
         <div className="container-x flex flex-col py-2">
+          <form
+            action="/mugs"
+            className="flex items-center gap-3 py-3 border-b border-rule"
+          >
+            <Search size={16} className="shrink-0 text-ink-faint" />
+            <input
+              type="search"
+              name="q"
+              placeholder="Search mugs…"
+              className="flex-1 bg-transparent text-[0.95rem] text-ink placeholder:text-ink-faint focus:outline-none"
+            />
+          </form>
           {NAV.map((item) => (
             <Link
               key={item.href}

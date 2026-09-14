@@ -96,6 +96,9 @@ create table if not exists site_settings (
   hero_image_mobile text,
   hero_image_tablet text,
   hero_image_desktop text,
+  hero_image_mobile_position text not null default '50% 50%',
+  hero_image_tablet_position text not null default '50% 50%',
+  hero_image_desktop_position text not null default '50% 50%',
   updated_at timestamptz not null default now()
 );
 insert into site_settings (id) values (1) on conflict (id) do nothing;
@@ -106,6 +109,9 @@ alter table site_settings drop column if exists hero_photo_label;
 alter table site_settings add column if not exists hero_image_mobile text;
 alter table site_settings add column if not exists hero_image_tablet text;
 alter table site_settings add column if not exists hero_image_desktop text;
+alter table site_settings add column if not exists hero_image_mobile_position text not null default '50% 50%';
+alter table site_settings add column if not exists hero_image_tablet_position text not null default '50% 50%';
+alter table site_settings add column if not exists hero_image_desktop_position text not null default '50% 50%';
 
 alter table site_settings enable row level security;
 

@@ -5,7 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutGrid,
+  BarChart3,
   Coffee,
+  Boxes,
   Tag,
   Layers,
   Receipt,
@@ -18,7 +20,9 @@ import {
 
 const NAV = [
   { href: "/admin", label: "Dashboard", Icon: LayoutGrid },
+  { href: "/admin/analytics", label: "Analytics", Icon: BarChart3 },
   { href: "/admin/mugs", label: "Mugs", Icon: Coffee },
+  { href: "/admin/inventory", label: "Inventory", Icon: Boxes },
   { href: "/admin/categories", label: "Categories", Icon: Tag },
   { href: "/admin/collections", label: "Collections", Icon: Layers },
   { href: "/admin/orders", label: "Orders", Icon: Receipt },
@@ -84,19 +88,21 @@ export default function AdminShell({
   return (
     <div className="min-h-[calc(100vh-4rem)] md:grid md:grid-cols-[240px_1fr]">
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex md:flex-col md:gap-8 md:sticky md:top-0 md:h-[calc(100vh-4rem)] md:overflow-y-auto border-r border-rule px-5 py-8">
-        <div>
-          <span className="kicker">Admin</span>
-          <p className="text-sm text-ink-soft mt-1 truncate">{userLabel}</p>
-        </div>
+      <aside className="hidden md:flex md:flex-col md:gap-8 md:sticky md:top-16 md:h-[calc(100vh-4rem)] md:overflow-y-auto border-r border-rule px-5 py-8">
         <NavLinks pathname={pathname} />
-        <Link
-          href="/"
-          className="mt-auto inline-flex items-center gap-2 text-xs text-ink-faint no-underline hover:text-ink"
-        >
-          <ExternalLink size={13} strokeWidth={1.7} aria-hidden />
-          View store
-        </Link>
+        <div className="mt-auto flex flex-col gap-4">
+          <div>
+            <span className="kicker">Admin</span>
+            <p className="text-sm text-ink-soft mt-1 truncate">{userLabel}</p>
+          </div>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-xs text-ink-faint no-underline hover:text-ink"
+          >
+            <ExternalLink size={13} strokeWidth={1.7} aria-hidden />
+            View store
+          </Link>
+        </div>
       </aside>
 
       {/* Mobile top bar */}
@@ -123,11 +129,7 @@ export default function AdminShell({
             onClick={() => setMenuOpen(false)}
           />
           <div className="absolute inset-y-0 left-0 w-[82%] max-w-[300px] bg-paper border-r border-rule px-5 py-6 flex flex-col gap-8 overflow-y-auto">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <span className="kicker">Admin</span>
-                <p className="text-sm text-ink-soft mt-1 truncate">{userLabel}</p>
-              </div>
+            <div className="flex items-start justify-end">
               <button
                 onClick={() => setMenuOpen(false)}
                 aria-label="Close admin menu"
@@ -137,13 +139,19 @@ export default function AdminShell({
               </button>
             </div>
             <NavLinks pathname={pathname} onNavigate={() => setMenuOpen(false)} />
-            <Link
-              href="/"
-              className="mt-auto inline-flex items-center gap-2 text-xs text-ink-faint no-underline hover:text-ink"
-            >
-              <ExternalLink size={13} strokeWidth={1.7} aria-hidden />
-              View store
-            </Link>
+            <div className="mt-auto flex flex-col gap-4">
+              <div>
+                <span className="kicker">Admin</span>
+                <p className="text-sm text-ink-soft mt-1 truncate">{userLabel}</p>
+              </div>
+              <Link
+                href="/"
+                className="inline-flex items-center gap-2 text-xs text-ink-faint no-underline hover:text-ink"
+              >
+                <ExternalLink size={13} strokeWidth={1.7} aria-hidden />
+                View store
+              </Link>
+            </div>
           </div>
         </div>
       )}
