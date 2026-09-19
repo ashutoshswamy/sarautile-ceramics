@@ -1,6 +1,7 @@
 import { Trash2 } from "lucide-react";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import SubmitButton from "@/components/admin/SubmitButton";
+import ConfirmSubmitButton from "@/components/admin/ConfirmSubmitButton";
 import {
   createDiscountCode,
   createFirstPurchaseDiscountCode,
@@ -115,13 +116,13 @@ export default async function AdminDiscountsPage() {
               </button>
             </form>
             <form action={deleteDiscountCode.bind(null, c.code)}>
-              <button
-                type="submit"
+              <ConfirmSubmitButton
+                confirmTitle={`Delete "${c.code}"?`}
                 aria-label={`Delete ${c.code}`}
-                className="text-ink-faint cursor-pointer transition-colors hover:text-warn-ink"
+                className="text-ink-faint cursor-pointer transition-colors hover:text-warn-ink disabled:opacity-60"
               >
                 <Trash2 size={15} strokeWidth={1.8} />
-              </button>
+              </ConfirmSubmitButton>
             </form>
           </div>
         ))}

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/adminAuth";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { redirectWithToast, errorMessage } from "@/lib/actionRedirect";
 
 const BREAKPOINTS = ["mobile", "tablet", "desktop"] as const;
 
@@ -45,24 +46,30 @@ export async function updateSiteSettings(formData: FormData) {
   await requireAdmin();
   const supabase = getSupabaseAdmin();
 
-  const [mobile, tablet, desktop] = await Promise.all(
-    BREAKPOINTS.map((bp) => resolveImageUrl(supabase, formData, bp))
-  );
+  try {
+    const [mobile, tablet, desktop] = await Promise.all(
+      BREAKPOINTS.map((bp) => resolveImageUrl(supabase, formData, bp))
+    );
 
-  const { error } = await supabase
-    .from("site_settings")
-    .update({
-      hero_image_mobile: mobile,
-      hero_image_tablet: tablet,
-      hero_image_desktop: desktop,
-      hero_image_mobile_position: resolvePosition(formData, "mobile"),
-      hero_image_tablet_position: resolvePosition(formData, "tablet"),
-      hero_image_desktop_position: resolvePosition(formData, "desktop"),
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", 1);
-  if (error) throw new Error(error.message);
+    const { error } = await supabase
+      .from("site_settings")
+      .update({
+        hero_image_mobile: mobile,
+        hero_image_tablet: tablet,
+        hero_image_desktop: desktop,
+        hero_image_mobile_position: resolvePosition(formData, "mobile"),
+        hero_image_tablet_position: resolvePosition(formData, "tablet"),
+        hero_image_desktop_position: resolvePosition(formData, "desktop"),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", 1);
+    if (error) throw new Error(error.message);
+  } catch (err) {
+    redirectWithToast("/admin/settings", errorMessage(err), "error");
+  }
+
   revalidateHero();
+  redirectWithToast("/admin/settings", "Changes saved.");
 }
 
 export async function resetSiteSettings() {
@@ -79,6 +86,8 @@ export async function resetSiteSettings() {
       updated_at: new Date().toISOString(),
     })
     .eq("id", 1);
-  if (error) throw new Error(error.message);
+  if (error) redirectWithToast("/admin/settings", error.message, "error");
+
   revalidateHero();
+  redirectWithToast("/admin/settings", "Reset to default.");
 }

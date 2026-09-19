@@ -1,12 +1,21 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronRight, Trash2 } from "lucide-react";
+import { ChevronRight, Trash2, ChevronUp, ChevronDown, ImagePlus } from "lucide-react";
 import { getProduct } from "@/lib/queries";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import PlaceholderPhoto from "@/components/PlaceholderPhoto";
 import SubmitButton from "@/components/admin/SubmitButton";
 import FilePickerField from "@/components/admin/FilePickerField";
-import { updateProduct, deleteProduct } from "./actions";
+import ConfirmSubmitButton from "@/components/admin/ConfirmSubmitButton";
+import {
+  updateProduct,
+  deleteProduct,
+  addProductImages,
+  deleteProductImage,
+  reorderProductImage,
+} from "./actions";
+
+type GalleryImage = { id: number; url: string; position: number };
 
 export default async function AdminEditProductPage(
   props: PageProps<"/admin/products/[slug]">
@@ -14,7 +23,7 @@ export default async function AdminEditProductPage(
   const { slug } = await props.params;
   const supabase = getSupabaseAdmin();
 
-  const [product, { data: categories }, { data: collections }, { data: memberships }] =
+  const [product, { data: categories }, { data: collections }, { data: memberships }, { data: gallery }] =
     await Promise.all([
       getProduct(slug),
       supabase.from("categories").select("slug, name").order("name").returns<
@@ -28,10 +37,17 @@ export default async function AdminEditProductPage(
         .select("collection_slug")
         .eq("product_slug", slug)
         .returns<{ collection_slug: string }[]>(),
+      supabase
+        .from("product_images")
+        .select("id, url, position")
+        .eq("product_slug", slug)
+        .order("position")
+        .returns<GalleryImage[]>(),
     ]);
   if (!product) notFound();
 
   const memberSlugs = new Set((memberships ?? []).map((m) => m.collection_slug));
+  const images = gallery ?? [];
 
   return (
     <div className="max-w-[560px]">
@@ -45,13 +61,14 @@ export default async function AdminEditProductPage(
       <div className="flex items-start gap-4">
         <h1 className="display-2">{product.name}</h1>
         <form action={deleteProduct.bind(null, product.slug)} className="ml-auto">
-          <button
-            type="submit"
-            className="inline-flex items-center gap-1.5 text-sm text-ink-faint cursor-pointer transition-colors hover:text-warn-ink"
+          <ConfirmSubmitButton
+            confirmTitle={`Delete "${product.name}"?`}
+            confirmBody="This removes the product, its photos, and its reviews. This can't be undone."
+            className="inline-flex items-center gap-1.5 text-sm text-ink-faint cursor-pointer transition-colors hover:text-warn-ink disabled:opacity-60"
           >
             <Trash2 size={14} strokeWidth={1.8} aria-hidden />
             Delete
-          </button>
+          </ConfirmSubmitButton>
         </form>
       </div>
 
@@ -148,6 +165,80 @@ export default async function AdminEditProductPage(
 
         <SubmitButton>Save changes</SubmitButton>
       </form>
+
+      <div className="mt-10 pt-8 border-t border-rule">
+        <span className="kicker">Additional photos</span>
+        <p className="text-sm text-ink-soft mt-1.5">
+          Shown after the cover photo on the product page, in this order.
+        </p>
+
+        {images.length > 0 && (
+          <div className="flex flex-col mt-4">
+            {images.map((img, i) => (
+              <div
+                key={img.id}
+                className="flex items-center gap-3 py-3 border-b border-rule"
+              >
+                <PlaceholderPhoto
+                  label={`${product.name} photo ${i + 2}`}
+                  src={img.url}
+                  rounded="rounded-lg"
+                  className="w-14 h-14 flex-none"
+                  sizes="56px"
+                />
+                <div className="flex flex-col gap-1">
+                  <form action={reorderProductImage.bind(null, product.slug, img.id, "up")}>
+                    <button
+                      type="submit"
+                      disabled={i === 0}
+                      aria-label="Move up"
+                      className="flex items-center justify-center w-6 h-6 text-ink-faint cursor-pointer transition-colors hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      <ChevronUp size={15} strokeWidth={1.8} />
+                    </button>
+                  </form>
+                  <form action={reorderProductImage.bind(null, product.slug, img.id, "down")}>
+                    <button
+                      type="submit"
+                      disabled={i === images.length - 1}
+                      aria-label="Move down"
+                      className="flex items-center justify-center w-6 h-6 text-ink-faint cursor-pointer transition-colors hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      <ChevronDown size={15} strokeWidth={1.8} />
+                    </button>
+                  </form>
+                </div>
+                <form
+                  action={deleteProductImage.bind(null, product.slug, img.id)}
+                  className="ml-auto"
+                >
+                  <ConfirmSubmitButton
+                    confirmTitle="Remove this photo?"
+                    className="flex items-center justify-center w-8 h-8 text-ink-faint cursor-pointer transition-colors hover:text-warn-ink disabled:opacity-60"
+                  >
+                    <Trash2 size={15} strokeWidth={1.8} />
+                  </ConfirmSubmitButton>
+                </form>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <form
+          action={addProductImages.bind(null, product.slug)}
+          encType="multipart/form-data"
+          className="flex items-end gap-3 mt-5"
+        >
+          <label className="field-label flex-1">
+            Add photos
+            <FilePickerField name="photo_files" accept="image/*" multiple />
+          </label>
+          <SubmitButton>
+            <ImagePlus size={15} strokeWidth={1.8} aria-hidden />
+            Add
+          </SubmitButton>
+        </form>
+      </div>
     </div>
   );
 }

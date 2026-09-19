@@ -1,5 +1,6 @@
 import { Star, Trash2, Check } from "lucide-react";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import ConfirmSubmitButton from "@/components/admin/ConfirmSubmitButton";
 import { approveReview, deleteReview } from "./actions";
 
 type ReviewRow = {
@@ -39,6 +40,7 @@ export default async function AdminReviewsPage(props: PageProps<"/admin/reviews"
 
   const reviews = (data ?? []).filter((r) => (filter === "approved" ? r.approved : !r.approved));
   const pendingCount = (data ?? []).filter((r) => !r.approved).length;
+  const returnPath = `/admin/reviews?filter=${filter}`;
 
   return (
     <div className="max-w-[640px]">
@@ -80,7 +82,7 @@ export default async function AdminReviewsPage(props: PageProps<"/admin/reviews"
             <p className="text-sm text-ink-soft mt-2 leading-relaxed">{r.comment}</p>
             <div className="flex gap-3 mt-2.5">
               {!r.approved && (
-                <form action={approveReview.bind(null, r.id, r.product_slug)}>
+                <form action={approveReview.bind(null, r.id, r.product_slug, returnPath)}>
                   <button
                     type="submit"
                     className="inline-flex items-center gap-1.5 text-xs text-sage-ink cursor-pointer hover:underline"
@@ -90,14 +92,14 @@ export default async function AdminReviewsPage(props: PageProps<"/admin/reviews"
                   </button>
                 </form>
               )}
-              <form action={deleteReview.bind(null, r.id, r.product_slug)}>
-                <button
-                  type="submit"
-                  className="inline-flex items-center gap-1.5 text-xs text-ink-faint cursor-pointer hover:text-warn-ink"
+              <form action={deleteReview.bind(null, r.id, r.product_slug, returnPath)}>
+                <ConfirmSubmitButton
+                  confirmTitle="Delete this review?"
+                  className="inline-flex items-center gap-1.5 text-xs text-ink-faint cursor-pointer hover:text-warn-ink disabled:opacity-60"
                 >
                   <Trash2 size={13} strokeWidth={1.8} aria-hidden />
                   Delete
-                </button>
+                </ConfirmSubmitButton>
               </form>
             </div>
           </div>

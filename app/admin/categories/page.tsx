@@ -1,6 +1,7 @@
 import { Trash2 } from "lucide-react";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import SubmitButton from "@/components/admin/SubmitButton";
+import ConfirmSubmitButton from "@/components/admin/ConfirmSubmitButton";
 import { createCategory, deleteCategory } from "./actions";
 
 export default async function AdminCategoriesPage() {
@@ -36,13 +37,14 @@ export default async function AdminCategoriesPage() {
             <span className="text-ink">{c.name}</span>
             <span className="text-xs text-ink-faint">/{c.slug}</span>
             <form action={deleteCategory.bind(null, c.slug)} className="ml-auto">
-              <button
-                type="submit"
+              <ConfirmSubmitButton
+                confirmTitle={`Delete "${c.name}"?`}
+                confirmBody="Products in this category keep their other details but lose their category."
                 aria-label={`Delete ${c.name}`}
-                className="text-ink-faint cursor-pointer transition-colors hover:text-warn-ink"
+                className="text-ink-faint cursor-pointer transition-colors hover:text-warn-ink disabled:opacity-60"
               >
                 <Trash2 size={15} strokeWidth={1.8} />
-              </button>
+              </ConfirmSubmitButton>
             </form>
           </div>
         ))}

@@ -1,6 +1,7 @@
 import { Trash2 } from "lucide-react";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import SubmitButton from "@/components/admin/SubmitButton";
+import ConfirmSubmitButton from "@/components/admin/ConfirmSubmitButton";
 import { createCollection, deleteCollection } from "./actions";
 
 const RESERVED_SLUGS = new Set(["new-arrivals", "bestsellers"]);
@@ -45,13 +46,14 @@ export default async function AdminCollectionsPage() {
               <span className="badge bg-warn-bg text-warn-ink">Used by homepage</span>
             )}
             <form action={deleteCollection.bind(null, c.slug)} className="ml-auto">
-              <button
-                type="submit"
+              <ConfirmSubmitButton
+                confirmTitle={`Delete "${c.name}"?`}
+                confirmBody="Products in this collection keep their other details but drop out of it."
                 aria-label={`Delete ${c.name}`}
-                className="text-ink-faint cursor-pointer transition-colors hover:text-warn-ink"
+                className="text-ink-faint cursor-pointer transition-colors hover:text-warn-ink disabled:opacity-60"
               >
                 <Trash2 size={15} strokeWidth={1.8} />
-              </button>
+              </ConfirmSubmitButton>
             </form>
           </div>
         ))}

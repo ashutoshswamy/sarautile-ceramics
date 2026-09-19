@@ -7,8 +7,8 @@ export default function Loader() {
   const [gone, setGone] = useState(false);
 
   useEffect(() => {
-    // fixed 3s: matches the progress-bar fill animation in globals.css
-    const t = setTimeout(() => setHide(true), 3000);
+    // fixed 1.5s: matches the progress-bar fill animation in globals.css
+    const t = setTimeout(() => setHide(true), 1500);
     return () => clearTimeout(t);
   }, []);
 

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/adminAuth";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { redirectWithToast } from "@/lib/actionRedirect";
 
 export async function updateStock(formData: FormData) {
   await requireAdmin();
@@ -21,10 +22,11 @@ export async function updateStock(formData: FormData) {
     )
   );
   const failed = results.find((r) => r.error);
-  if (failed?.error) throw new Error(failed.error.message);
+  if (failed?.error) redirectWithToast("/admin/inventory", failed.error.message, "error");
 
   revalidatePath("/admin/inventory");
   revalidatePath("/admin/analytics");
   revalidatePath("/products");
   revalidatePath("/");
+  redirectWithToast("/admin/inventory", "Stock updated.");
 }

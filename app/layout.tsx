@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { DM_Sans, Space_Grotesk } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { WishlistProvider } from "@/components/WishlistContext";
 import { CartProvider } from "@/components/CartContext";
 import { ProductsProvider } from "@/components/ProductsContext";
+import { ToastProvider } from "@/components/Toaster";
+import ToastFromQuery from "@/components/ToastFromQuery";
 import Loader from "@/components/Loader";
 import CartDrawer from "@/components/CartDrawer";
 import Header from "@/components/Header";
@@ -50,11 +53,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <ProductsProvider>
             <WishlistProvider>
               <CartProvider>
-                <Loader />
-                <Header />
-                <main className="flex-1">{children}</main>
-                <SiteFooter />
-                <CartDrawer />
+                <ToastProvider>
+                  <Suspense fallback={null}>
+                    <ToastFromQuery />
+                  </Suspense>
+                  <Loader />
+                  <Header />
+                  <main className="flex-1">{children}</main>
+                  <SiteFooter />
+                  <CartDrawer />
+                </ToastProvider>
               </CartProvider>
             </WishlistProvider>
           </ProductsProvider>

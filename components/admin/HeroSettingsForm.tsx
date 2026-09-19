@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import SubmitButton from "@/components/admin/SubmitButton";
+import ConfirmSubmitButton from "@/components/admin/ConfirmSubmitButton";
 import { updateSiteSettings, resetSiteSettings } from "@/app/admin/settings/actions";
 
 // previewWidth/previewHeight are the actual on-site crop window for each
@@ -225,12 +226,14 @@ export default function HeroSettingsForm({
       </form>
 
       <form action={resetSiteSettings} className="mt-4">
-        <button
-          type="submit"
-          className="text-sm text-ink-faint cursor-pointer transition-colors hover:text-warn-ink"
+        <ConfirmSubmitButton
+          confirmTitle="Reset the hero image to default?"
+          confirmBody="Clears the image and focus point for every breakpoint."
+          confirmLabel="Reset"
+          className="text-sm text-ink-faint cursor-pointer transition-colors hover:text-warn-ink disabled:opacity-60"
         >
           Reset to default
-        </button>
+        </ConfirmSubmitButton>
       </form>
     </>
   );
