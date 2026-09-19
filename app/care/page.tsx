@@ -2,7 +2,7 @@ import { Check, TriangleAlert, Info, Wrench, LifeBuoy } from "lucide-react";
 import { care } from "@/lib/data";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Care - Sarautile Ceramics" };
+export const metadata: Metadata = { title: "Care - Sara Utile Ceramics" };
 
 // verdict → icon; unknown verdicts fall back to Info
 const VERDICT_ICON: Record<string, typeof Check> = {
@@ -18,7 +18,7 @@ export default function CarePage() {
       <span className="kicker">Care</span>
       <h1 className="display-2 mt-3">Looking after it</h1>
       <p className="lede mt-4">
-        Short version: use it like a mug. Longer version below.
+        Short version: everyday use is fine. Longer version below.
       </p>
 
       <div className="flex flex-col gap-3 mt-10">
@@ -54,7 +54,7 @@ export default function CarePage() {
           <a href="mailto:hello@sarautileceramics.in">
             hello@sarautileceramics.in
           </a>{" "}
-          and we&apos;ll sort it. Usually that means a new mug in the post.
+          and we&apos;ll sort it. Usually that means a new piece in the post.
         </p>
       </div>
     </div>

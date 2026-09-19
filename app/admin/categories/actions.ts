@@ -21,7 +21,7 @@ export async function createCategory(formData: FormData) {
 
   revalidatePath("/admin/categories");
   revalidatePath("/");
-  revalidatePath("/mugs");
+  revalidatePath("/products");
 }
 
 export async function deleteCategory(slug: string) {
@@ -31,5 +31,5 @@ export async function deleteCategory(slug: string) {
 
   revalidatePath("/admin/categories");
   revalidatePath("/");
-  revalidatePath("/mugs");
+  revalidatePath("/products");
 }

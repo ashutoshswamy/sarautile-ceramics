@@ -1,7 +1,7 @@
 import { SignIn } from "@clerk/nextjs";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Sign in — Sarautile Ceramics" };
+export const metadata: Metadata = { title: "Sign in — Sara Utile Ceramics" };
 
 export default function SignInPage() {
   return (
@@ -9,7 +9,7 @@ export default function SignInPage() {
       path="/signin"
       routing="path"
       signUpUrl="/signup"
-      forceRedirectUrl="/wishlist"
+      fallbackRedirectUrl="/products"
     />
   );
 }

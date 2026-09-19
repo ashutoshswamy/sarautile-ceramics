@@ -37,11 +37,11 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false;
     supabase
       .from("wishlist_items")
-      .select("mug_slug")
+      .select("product_slug")
       .then(({ data, error }) => {
         if (cancelled) return;
         if (error) return console.error("wishlist load failed:", error);
-        setSlugs((data ?? []).map((r) => r.mug_slug));
+        setSlugs((data ?? []).map((r) => r.product_slug));
       });
     return () => {
       cancelled = true;
@@ -67,13 +67,13 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
             .from("wishlist_items")
             .delete()
             .eq("user_id", user.id)
-            .eq("mug_slug", slug)
+            .eq("product_slug", slug)
             .then(logIfError);
           return prev.filter((s) => s !== slug);
         }
         supabase
           .from("wishlist_items")
-          .insert({ user_id: user.id, mug_slug: slug })
+          .insert({ user_id: user.id, product_slug: slug })
           .then(logIfError);
         return [...prev, slug];
       });
@@ -89,7 +89,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         .from("wishlist_items")
         .delete()
         .eq("user_id", user.id)
-        .eq("mug_slug", slug)
+        .eq("product_slug", slug)
         .then(logIfError);
     },
     [user, supabase]

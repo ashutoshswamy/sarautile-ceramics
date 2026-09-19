@@ -1,24 +1,17 @@
-// Product catalog (mugs + glazes) now lives in Supabase - see lib/queries.ts.
-// This file keeps the shared types plus static editorial copy that isn't
-// catalog data (story, timeline, care, wholesale terms).
+// Product catalog now lives in Supabase - see
+// lib/queries.ts. This file keeps the shared types plus static editorial
+// copy that isn't catalog data (story, timeline, care, wholesale terms).
 
-export type Glaze = {
-  name: string;
-  hex: string;
-  desc: string;
-  shot: string;
-};
-
-export type Mug = {
+export type Product = {
   slug: string;
   name: string;
   price: number;
-  oz: number;
-  note: string;
+  weight: string | null;
   left: string;
   photoLabel: string;
+  imageUrl: string | null;
+  images: string[];
   categorySlug: string | null;
-  glazes: Glaze[];
 };
 
 export const storyBits = [
@@ -30,8 +23,8 @@ export const storyBits = [
   },
   {
     kicker: "The wheel",
-    title: "Forty mugs is a good day",
-    body: "Thrown, trimmed the next morning, handles pulled the morning after that.",
+    title: "Forty pieces is a good day",
+    body: "Thrown, trimmed the next morning, handles and lips finished the morning after that.",
     photoLabel: "wheel, wet hands",
   },
   {
@@ -40,14 +33,6 @@ export const storyBits = [
     body: "Bisque low and slow, glaze up to 1240°C. Then we wait and hope.",
     photoLabel: "kiln door, packed",
   },
-];
-
-export const specs = [
-  { k: "Holds", v: "12 oz / 350 ml to the rim" },
-  { k: "Body", v: "Grey stoneware, fired to 1240°C" },
-  { k: "Dishwasher", v: "Yes. Microwave too." },
-  { k: "Weight", v: "About 340 g - varies a bit" },
-  { k: "Made", v: "Kiln 41, August 2026, India" },
 ];
 
 export const timeline = [
@@ -69,7 +54,7 @@ export const timeline = [
   {
     year: "2026",
     title: "Still two of us",
-    body: "We have been asked about scaling up. We would rather make fewer mugs properly.",
+    body: "We have been asked about scaling up. We would rather make fewer pieces properly.",
   },
 ];
 
@@ -77,14 +62,14 @@ export const care = [
   {
     q: "Dishwasher?",
     verdict: "Yes",
-    a: "Top or bottom shelf, both fine. The glaze will not fade. Give the handle room so it does not knock about.",
+    a: "Top or bottom shelf, both fine. The glaze will not fade. Give handles and rims room so they do not knock about.",
     tagBg: "var(--sage-bg)",
     tagFg: "var(--sage-ink)",
   },
   {
     q: "Microwave?",
     verdict: "Yes",
-    a: "No metal in the clay or the glaze. It will get hot, as mugs do.",
+    a: "No metal in the clay or the glaze. It will get hot, as stoneware does.",
     tagBg: "var(--sage-bg)",
     tagFg: "var(--sage-ink)",
   },
@@ -112,7 +97,7 @@ export const care = [
 ];
 
 export const wholesaleFacts = [
-  { k: "Minimum", v: "24 mugs per order" },
+  { k: "Minimum", v: "24 pieces per order" },
   { k: "Lead time", v: "6-8 weeks from deposit" },
   { k: "Trade price", v: "50% of retail, 24+" },
   { k: "Custom glaze", v: "Possible at 100+, adds 3 weeks" },

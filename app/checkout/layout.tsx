@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Checkout — Sarautile Ceramics" };
+export const metadata: Metadata = { title: "Checkout — Sara Utile Ceramics" };
 
 export default function CheckoutLayout({
   children,

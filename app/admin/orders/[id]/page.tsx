@@ -2,6 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import SubmitButton from "@/components/admin/SubmitButton";
+import { updateOrderStatus } from "../actions";
+
+const STATUSES = ["pending", "processing", "shipped", "delivered", "cancelled"] as const;
 
 type Order = {
   id: number;
@@ -12,17 +16,17 @@ type Order = {
   city: string;
   state: string;
   pin: string;
-  shipping_method: string;
-  note: string | null;
+  status: string;
+  discount_code: string | null;
+  discount_amount: number;
   subtotal: number;
-  postage: number;
   total: number;
+  razorpay_payment_id: string;
   created_at: string;
 };
 
 type OrderItem = {
-  mug_slug: string;
-  glaze: string;
+  product_slug: string;
   qty: number;
   unit_price: number;
 };
@@ -37,7 +41,7 @@ export default async function AdminOrderDetailPage(
     supabase.from("orders").select("*").eq("id", id).returns<Order[]>().single(),
     supabase
       .from("order_items")
-      .select("mug_slug, glaze, qty, unit_price")
+      .select("product_slug, qty, unit_price")
       .eq("order_id", id)
       .returns<OrderItem[]>(),
   ]);
@@ -53,10 +57,27 @@ export default async function AdminOrderDetailPage(
         <ChevronRight size={13} strokeWidth={1.7} aria-hidden />
         <span className="text-ink-soft">#{order.id}</span>
       </nav>
-      <h1 className="display-2">Order #{order.id}</h1>
+      <div className="flex items-center gap-3 flex-wrap">
+        <h1 className="display-2">Order #{order.id}</h1>
+        <span className="badge capitalize">{order.status}</span>
+      </div>
       <p className="text-sm text-ink-faint mt-1">
         {new Date(order.created_at).toLocaleString()}
       </p>
+
+      <form
+        action={updateOrderStatus.bind(null, order.id)}
+        className="flex items-center gap-3 mt-5"
+      >
+        <select name="status" defaultValue={order.status} className="field w-auto">
+          {STATUSES.map((s) => (
+            <option key={s} value={s} className="capitalize">
+              {s}
+            </option>
+          ))}
+        </select>
+        <SubmitButton>Update status</SubmitButton>
+      </form>
 
       <div className="grid sm:grid-cols-2 gap-8 mt-8">
         <div>
@@ -72,14 +93,8 @@ export default async function AdminOrderDetailPage(
           </p>
         </div>
         <div>
-          <span className="kicker">Shipping</span>
-          <p className="text-sm text-ink mt-2">{order.shipping_method}</p>
-          {order.note && (
-            <>
-              <span className="kicker mt-4 block">Note on the card</span>
-              <p className="text-sm text-ink mt-2">{order.note}</p>
-            </>
-          )}
+          <span className="kicker">Payment</span>
+          <p className="text-sm text-ink mt-2 font-mono text-xs">{order.razorpay_payment_id}</p>
         </div>
       </div>
 
@@ -87,8 +102,7 @@ export default async function AdminOrderDetailPage(
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-canvas text-left text-xs text-ink-faint uppercase tracking-wide">
-              <th className="px-4 py-3 font-medium">Mug</th>
-              <th className="px-4 py-3 font-medium">Glaze</th>
+              <th className="px-4 py-3 font-medium">Product</th>
               <th className="px-4 py-3 font-medium">Qty</th>
               <th className="px-4 py-3 font-medium">Price</th>
             </tr>
@@ -96,8 +110,7 @@ export default async function AdminOrderDetailPage(
           <tbody>
             {(items ?? []).map((item, i) => (
               <tr key={i} className="border-t border-rule">
-                <td className="px-4 py-3 text-ink">{item.mug_slug}</td>
-                <td className="px-4 py-3 text-ink-soft">{item.glaze}</td>
+                <td className="px-4 py-3 text-ink">{item.product_slug}</td>
                 <td className="px-4 py-3 text-ink-soft">×{item.qty}</td>
                 <td className="px-4 py-3 text-ink-soft">₹{item.unit_price * item.qty}</td>
               </tr>
@@ -109,10 +122,12 @@ export default async function AdminOrderDetailPage(
             <span>Subtotal</span>
             <span className="ml-auto">₹{order.subtotal}</span>
           </div>
-          <div className="flex">
-            <span>Postage</span>
-            <span className="ml-auto">₹{order.postage}</span>
-          </div>
+          {order.discount_amount > 0 && (
+            <div className="flex">
+              <span>Discount {order.discount_code ? `(${order.discount_code})` : ""}</span>
+              <span className="ml-auto">-₹{order.discount_amount}</span>
+            </div>
+          )}
           <div className="flex text-base font-medium text-ink">
             <span>Total</span>
             <span className="ml-auto">₹{order.total}</span>

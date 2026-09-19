@@ -13,8 +13,6 @@ export default function BrandWordmark() {
           x="500"
           y="150"
           textAnchor="middle"
-          textLength="960"
-          lengthAdjust="spacing"
         >
           sarautile
         </text>

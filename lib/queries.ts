@@ -1,58 +1,59 @@
 import { getSupabase } from "@/lib/supabase";
-import type { Mug, Glaze } from "@/lib/data";
+import type { Product } from "@/lib/data";
 
-type MugRow = {
+type ProductRow = {
   slug: string;
   name: string;
   price: number;
-  oz: number;
-  note: string;
+  weight: string | null;
   left_count: number;
   photo_label: string;
+  image_url: string | null;
   category_slug: string | null;
 };
 
-type GlazeRow = {
-  mug_slug: string;
-  name: string;
-  hex: string;
-  description: string;
-  shot: string;
+type ProductImageRow = {
+  product_slug: string;
+  url: string;
+  position: number;
 };
 
-function assemble(mugRows: MugRow[], glazeRows: GlazeRow[]): Mug[] {
-  return mugRows.map((m) => ({
-    slug: m.slug,
-    name: m.name,
-    price: m.price,
-    oz: m.oz,
-    note: m.note,
-    left: `${m.left_count} left`,
-    photoLabel: m.photo_label,
-    categorySlug: m.category_slug,
-    glazes: glazeRows
-      .filter((g) => g.mug_slug === m.slug)
-      .map((g): Glaze => ({ name: g.name, hex: g.hex, desc: g.description, shot: g.shot })),
+function assemble(productRows: ProductRow[], imageRows: ProductImageRow[]): Product[] {
+  return productRows.map((p) => ({
+    slug: p.slug,
+    name: p.name,
+    price: p.price,
+    weight: p.weight,
+    left: `${p.left_count} left`,
+    photoLabel: p.photo_label,
+    imageUrl: p.image_url,
+    images: imageRows
+      .filter((i) => i.product_slug === p.slug)
+      .sort((a, b) => a.position - b.position)
+      .map((i) => i.url),
+    categorySlug: p.category_slug,
   }));
 }
 
 // Catalog starts empty - every function here can legitimately return [] /
 // undefined, and every caller needs to handle that (hide the section, show
 // an empty state) rather than assume seed data exists.
-export async function getMugs(): Promise<Mug[]> {
+export async function getProducts(): Promise<Product[]> {
   const supabase = getSupabase();
-  const [{ data: mugRows, error: mugErr }, { data: glazeRows, error: glazeErr }] =
-    await Promise.all([
-      supabase.from("mugs").select("*").order("created_at"),
-      supabase.from("glazes").select("*").order("id"),
-    ]);
-  if (mugErr) throw mugErr;
-  if (glazeErr) throw glazeErr;
-  return assemble(mugRows ?? [], glazeRows ?? []);
+  const [
+    { data: productRows, error: productErr },
+    { data: imageRows, error: imageErr },
+  ] = await Promise.all([
+    supabase.from("products").select("*").order("created_at"),
+    supabase.from("product_images").select("*").order("position"),
+  ]);
+  if (productErr) throw productErr;
+  if (imageErr) throw imageErr;
+  return assemble(productRows ?? [], imageRows ?? []);
 }
 
-export async function getMug(slug: string): Promise<Mug | undefined> {
-  return (await getMugs()).find((m) => m.slug === slug);
+export async function getProduct(slug: string): Promise<Product | undefined> {
+  return (await getProducts()).find((p) => p.slug === slug);
 }
 
 export type SiteSettings = {
@@ -94,45 +95,97 @@ export async function getCategories(): Promise<Category[]> {
   return data ?? [];
 }
 
-/** Categories that actually have at least one mug, each with its mugs. */
-export async function getCategoriesWithMugs(): Promise<
-  { slug: string; name: string; mugs: Mug[] }[]
+/** Categories that actually have at least one product, each with its products. */
+export async function getCategoriesWithProducts(): Promise<
+  { slug: string; name: string; products: Product[] }[]
 > {
-  const [categories, mugs] = await Promise.all([getCategories(), getMugs()]);
+  const [categories, products] = await Promise.all([getCategories(), getProducts()]);
   return categories
-    .map((c) => ({ ...c, mugs: mugs.filter((m) => m.categorySlug === c.slug) }))
-    .filter((c) => c.mugs.length > 0);
+    .map((c) => ({ ...c, products: products.filter((p) => p.categorySlug === c.slug) }))
+    .filter((c) => c.products.length > 0);
 }
 
-export async function getCollection(slug: string): Promise<Mug[]> {
+export async function getCollection(slug: string): Promise<Product[]> {
   const supabase = getSupabase();
-  const [{ data: links, error }, mugs] = await Promise.all([
+  const [{ data: links, error }, products] = await Promise.all([
     supabase
-      .from("mug_collections")
-      .select("mug_slug")
+      .from("product_collections")
+      .select("product_slug")
       .eq("collection_slug", slug)
       .order("created_at"),
-    getMugs(),
+    getProducts(),
   ]);
   if (error) throw error;
-  const bySlug = new Map(mugs.map((m) => [m.slug, m]));
+  const bySlug = new Map(products.map((p) => [p.slug, p]));
   return (links ?? [])
-    .map((l) => bySlug.get(l.mug_slug))
-    .filter((m): m is Mug => !!m);
+    .map((l) => bySlug.get(l.product_slug))
+    .filter((p): p is Product => !!p);
 }
 
-export async function getGlazeFilters() {
-  const mugs = await getMugs();
-  const byName = new Map<
-    string,
-    { name: string; hex: string; desc: string; count: number }
-  >();
-  for (const m of mugs) {
-    for (const g of m.glazes) {
-      const hit = byName.get(g.name);
-      if (hit) hit.count++;
-      else byName.set(g.name, { name: g.name, hex: g.hex, desc: g.desc, count: 1 });
-    }
-  }
-  return [...byName.values()];
+export async function getCollectionMeta(
+  slug: string
+): Promise<{ slug: string; name: string } | undefined> {
+  const { data, error } = await getSupabase()
+    .from("collections")
+    .select("slug, name")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (error) throw error;
+  return data ?? undefined;
+}
+
+// "new-arrivals"/"bestsellers" already get their own homepage rows (see
+// app/page.tsx) - excluded here so they don't also show up as tiles in
+// "Shop by collection".
+const FEATURED_COLLECTION_SLUGS = new Set(["new-arrivals", "bestsellers"]);
+
+/** Collections (excluding the featured homepage rows) that have at least one product. */
+export async function getCollectionsWithProducts(): Promise<
+  { slug: string; name: string; products: Product[] }[]
+> {
+  const supabase = getSupabase();
+  const [{ data: collections, error: colErr }, { data: links, error: linkErr }, products] =
+    await Promise.all([
+      supabase.from("collections").select("slug, name").order("name"),
+      supabase.from("product_collections").select("product_slug, collection_slug"),
+      getProducts(),
+    ]);
+  if (colErr) throw colErr;
+  if (linkErr) throw linkErr;
+  const bySlug = new Map(products.map((p) => [p.slug, p]));
+  return (collections ?? [])
+    .filter((c) => !FEATURED_COLLECTION_SLUGS.has(c.slug))
+    .map((c) => ({
+      slug: c.slug,
+      name: c.name,
+      products: (links ?? [])
+        .filter((l) => l.collection_slug === c.slug)
+        .map((l) => bySlug.get(l.product_slug))
+        .filter((p): p is Product => !!p),
+    }))
+    .filter((c) => c.products.length > 0);
+}
+
+export type Review = {
+  id: number;
+  rating: number;
+  comment: string;
+  customerName: string;
+};
+
+/** Approved reviews for one product, newest first. */
+export async function getReviews(productSlug: string): Promise<Review[]> {
+  const { data, error } = await getSupabase()
+    .from("reviews")
+    .select("id, rating, comment, customer_name")
+    .eq("product_slug", productSlug)
+    .eq("approved", true)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map((r) => ({
+    id: r.id,
+    rating: r.rating,
+    comment: r.comment,
+    customerName: r.customer_name,
+  }));
 }

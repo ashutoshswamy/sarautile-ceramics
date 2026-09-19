@@ -2,57 +2,56 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
-import type { Mug, Glaze } from "@/lib/data";
+import type { Product } from "@/lib/data";
 
-// Client-side mirror of lib/queries.ts's getMugs(), for the few client
+// Client-side mirror of lib/queries.ts's getProducts(), for the few client
 // components (cart drawer, checkout, wishlist) that need to resolve a
-// slug back to a Mug. Catalog is public and small - one fetch on mount,
+// slug back to a Product. Catalog is public and small - one fetch on mount,
 // no realtime sync.
-type MugsContextValue = {
-  mugs: Mug[];
-  findMug: (slug: string) => Mug | undefined;
+type ProductsContextValue = {
+  products: Product[];
+  findProduct: (slug: string) => Product | undefined;
   loading: boolean;
 };
 
-const MugsContext = createContext<MugsContextValue | null>(null);
+const ProductsContext = createContext<ProductsContextValue | null>(null);
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export function MugsProvider({ children }: { children: React.ReactNode }) {
-  const [mugs, setMugs] = useState<Mug[]>([]);
+export function ProductsProvider({ children }: { children: React.ReactNode }) {
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     Promise.all([
-      supabase.from("mugs").select("*").order("created_at"),
-      supabase.from("glazes").select("*").order("id"),
-    ]).then(([{ data: mugRows, error: mugErr }, { data: glazeRows, error: glazeErr }]) => {
+      supabase.from("products").select("*").order("created_at"),
+      supabase.from("product_images").select("*").order("position"),
+    ]).then(([{ data: productRows, error: productErr }, { data: imageRows, error: imageErr }]) => {
       if (cancelled) return;
-      if (mugErr || glazeErr) {
-        console.error("catalog load failed:", mugErr ?? glazeErr);
+      if (productErr || imageErr) {
+        console.error("catalog load failed:", productErr ?? imageErr);
         setLoading(false);
         return;
       }
-      const assembled: Mug[] = (mugRows ?? []).map((m) => ({
-        slug: m.slug,
-        name: m.name,
-        price: m.price,
-        oz: m.oz,
-        note: m.note,
-        left: `${m.left_count} left`,
-        photoLabel: m.photo_label,
-        categorySlug: m.category_slug,
-        glazes: (glazeRows ?? [])
-          .filter((g) => g.mug_slug === m.slug)
-          .map(
-            (g): Glaze => ({ name: g.name, hex: g.hex, desc: g.description, shot: g.shot })
-          ),
+      const assembled: Product[] = (productRows ?? []).map((p) => ({
+        slug: p.slug,
+        name: p.name,
+        price: p.price,
+        weight: p.weight,
+        left: `${p.left_count} left`,
+        photoLabel: p.photo_label,
+        imageUrl: p.image_url,
+        images: (imageRows ?? [])
+          .filter((i) => i.product_slug === p.slug)
+          .sort((a, b) => a.position - b.position)
+          .map((i) => i.url),
+        categorySlug: p.category_slug,
       }));
-      setMugs(assembled);
+      setProducts(assembled);
       setLoading(false);
     });
     return () => {
@@ -60,17 +59,17 @@ export function MugsProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const findMug = (slug: string) => mugs.find((m) => m.slug === slug);
+  const findProduct = (slug: string) => products.find((p) => p.slug === slug);
 
   return (
-    <MugsContext.Provider value={{ mugs, findMug, loading }}>
+    <ProductsContext.Provider value={{ products, findProduct, loading }}>
       {children}
-    </MugsContext.Provider>
+    </ProductsContext.Provider>
   );
 }
 
-export function useMugs() {
-  const ctx = useContext(MugsContext);
-  if (!ctx) throw new Error("useMugs must be used within MugsProvider");
+export function useProducts() {
+  const ctx = useContext(ProductsContext);
+  if (!ctx) throw new Error("useProducts must be used within ProductsProvider");
   return ctx;
 }

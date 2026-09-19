@@ -17,7 +17,7 @@ export async function updateStock(formData: FormData) {
 
   const results = await Promise.all(
     updates.map(({ slug, left_count }) =>
-      supabase.from("mugs").update({ left_count }).eq("slug", slug)
+      supabase.from("products").update({ left_count }).eq("slug", slug)
     )
   );
   const failed = results.find((r) => r.error);
@@ -25,6 +25,6 @@ export async function updateStock(formData: FormData) {
 
   revalidatePath("/admin/inventory");
   revalidatePath("/admin/analytics");
-  revalidatePath("/mugs");
+  revalidatePath("/products");
   revalidatePath("/");
 }

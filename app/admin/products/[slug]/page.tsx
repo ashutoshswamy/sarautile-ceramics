@@ -1,20 +1,22 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight, Trash2 } from "lucide-react";
-import { getMug } from "@/lib/queries";
+import { getProduct } from "@/lib/queries";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import PlaceholderPhoto from "@/components/PlaceholderPhoto";
 import SubmitButton from "@/components/admin/SubmitButton";
-import { updateMug, deleteMug, addGlaze, deleteGlaze } from "./actions";
+import FilePickerField from "@/components/admin/FilePickerField";
+import { updateProduct, deleteProduct } from "./actions";
 
-export default async function AdminEditMugPage(
-  props: PageProps<"/admin/mugs/[slug]">
+export default async function AdminEditProductPage(
+  props: PageProps<"/admin/products/[slug]">
 ) {
   const { slug } = await props.params;
   const supabase = getSupabaseAdmin();
 
-  const [mug, { data: categories }, { data: collections }, { data: memberships }] =
+  const [product, { data: categories }, { data: collections }, { data: memberships }] =
     await Promise.all([
-      getMug(slug),
+      getProduct(slug),
       supabase.from("categories").select("slug, name").order("name").returns<
         { slug: string; name: string }[]
       >(),
@@ -22,27 +24,27 @@ export default async function AdminEditMugPage(
         { slug: string; name: string }[]
       >(),
       supabase
-        .from("mug_collections")
+        .from("product_collections")
         .select("collection_slug")
-        .eq("mug_slug", slug)
+        .eq("product_slug", slug)
         .returns<{ collection_slug: string }[]>(),
     ]);
-  if (!mug) notFound();
+  if (!product) notFound();
 
   const memberSlugs = new Set((memberships ?? []).map((m) => m.collection_slug));
 
   return (
     <div className="max-w-[560px]">
       <nav className="flex items-center gap-1 text-xs text-ink-faint mb-4">
-        <Link href="/admin/mugs" className="text-ink-faint no-underline hover:text-ink">
-          Mugs
+        <Link href="/admin/products" className="text-ink-faint no-underline hover:text-ink">
+          Products
         </Link>
         <ChevronRight size={13} strokeWidth={1.7} aria-hidden />
-        <span className="text-ink-soft">{mug.name}</span>
+        <span className="text-ink-soft">{product.name}</span>
       </nav>
       <div className="flex items-start gap-4">
-        <h1 className="display-2">{mug.name}</h1>
-        <form action={deleteMug.bind(null, mug.slug)} className="ml-auto">
+        <h1 className="display-2">{product.name}</h1>
+        <form action={deleteProduct.bind(null, product.slug)} className="ml-auto">
           <button
             type="submit"
             className="inline-flex items-center gap-1.5 text-sm text-ink-faint cursor-pointer transition-colors hover:text-warn-ink"
@@ -53,38 +55,42 @@ export default async function AdminEditMugPage(
         </form>
       </div>
 
-      <form action={updateMug.bind(null, mug.slug)} className="flex flex-col gap-4 mt-8">
-        <label className="field-label">
-          Name
-          <input name="name" defaultValue={mug.name} required className="field" />
-        </label>
-        <div className="grid grid-cols-2 gap-4">
-          <label className="field-label">
-            Price (₹)
-            <input
-              name="price"
-              type="number"
-              min={0}
-              defaultValue={mug.price}
-              required
-              className="field"
-            />
-          </label>
-          <label className="field-label">
-            Size (oz)
-            <input
-              name="oz"
-              type="number"
-              min={1}
-              defaultValue={mug.oz}
-              required
-              className="field"
-            />
+      <form
+        action={updateProduct.bind(null, product.slug)}
+        encType="multipart/form-data"
+        className="flex flex-col gap-4 mt-8"
+      >
+        <div className="flex items-center gap-4">
+          <PlaceholderPhoto
+            label={product.photoLabel}
+            src={product.imageUrl}
+            rounded="rounded-xl"
+            className="w-24 h-24 flex-none"
+            sizes="96px"
+          />
+          <label className="field-label flex-1">
+            Photo
+            <FilePickerField name="photo_file" accept="image/*" />
           </label>
         </div>
         <label className="field-label">
-          Note (shown under the name)
-          <input name="note" defaultValue={mug.note} required className="field" />
+          Name
+          <input name="name" defaultValue={product.name} required className="field" />
+        </label>
+        <label className="field-label">
+          Price (₹)
+          <input
+            name="price"
+            type="number"
+            min={0}
+            defaultValue={product.price}
+            required
+            className="field"
+          />
+        </label>
+        <label className="field-label">
+          Weight (optional)
+          <input name="weight" defaultValue={product.weight ?? ""} placeholder="340 g" className="field" />
         </label>
         <label className="field-label">
           In stock
@@ -92,21 +98,21 @@ export default async function AdminEditMugPage(
             name="left_count"
             type="number"
             min={0}
-            defaultValue={parseInt(mug.left, 10) || 0}
+            defaultValue={parseInt(product.left, 10) || 0}
             required
             className="field"
           />
         </label>
         <label className="field-label">
-          Photo label (picks a stock photo deterministically)
-          <input name="photo_label" defaultValue={mug.photoLabel} required className="field" />
+          Photo label (alt text, and the empty-state placeholder until a photo is uploaded)
+          <input name="photo_label" defaultValue={product.photoLabel} required className="field" />
         </label>
 
         <label className="field-label">
           Category
           <select
             name="category_slug"
-            defaultValue={mug.categorySlug ?? ""}
+            defaultValue={product.categorySlug ?? ""}
             className="field"
           >
             <option value="">None</option>
@@ -142,66 +148,6 @@ export default async function AdminEditMugPage(
 
         <SubmitButton>Save changes</SubmitButton>
       </form>
-
-      <div className="mt-10">
-        <span className="kicker">Glazes</span>
-        <div className="flex flex-col mt-3">
-          {mug.glazes.map((g) => (
-            <div key={g.name} className="flex items-center gap-3 py-2.5 border-b border-rule text-sm">
-              <span
-                className="w-4 h-4 rounded-full shrink-0"
-                style={{ background: g.hex }}
-                aria-hidden
-              />
-              <span className="text-ink">{g.name}</span>
-              <span className="text-xs text-ink-faint truncate">{g.desc}</span>
-              <form
-                action={deleteGlaze.bind(null, mug.slug, g.name)}
-                className="ml-auto"
-              >
-                <button
-                  type="submit"
-                  aria-label={`Delete glaze ${g.name}`}
-                  className="text-ink-faint cursor-pointer transition-colors hover:text-warn-ink"
-                >
-                  <Trash2 size={14} strokeWidth={1.8} />
-                </button>
-              </form>
-            </div>
-          ))}
-          {mug.glazes.length === 0 && (
-            <p className="text-sm text-ink-faint py-2.5">No glazes yet.</p>
-          )}
-        </div>
-
-        <form
-          action={addGlaze.bind(null, mug.slug)}
-          className="grid grid-cols-2 gap-3 mt-4"
-        >
-          <input name="name" required placeholder="Glaze name" className="field" />
-          <input
-            name="hex"
-            required
-            placeholder="#c67139"
-            pattern="^#[0-9a-fA-F]{6}$"
-            title="Hex colour, eg. #c67139"
-            className="field"
-          />
-          <input
-            name="description"
-            required
-            placeholder="Short description"
-            className="field col-span-2"
-          />
-          <input
-            name="shot"
-            required
-            placeholder="Photo label"
-            className="field col-span-2"
-          />
-          <SubmitButton>Add glaze</SubmitButton>
-        </form>
-      </div>
     </div>
   );
 }

@@ -4,20 +4,20 @@ import { useRef } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
-import type { Mug } from "@/lib/data";
+import type { Product } from "@/lib/data";
 
 export default function ProductRow({
   title,
   badge,
-  mugs,
+  products,
 }: {
   title: string;
   badge: string;
-  mugs: Mug[];
+  products: Product[];
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
 
-  if (mugs.length === 0) return null;
+  if (products.length === 0) return null;
 
   function scrollBy(dir: 1 | -1) {
     trackRef.current?.scrollBy({ left: dir * 280, behavior: "smooth" });
@@ -27,7 +27,7 @@ export default function ProductRow({
     <section className="container-x section-tight rise">
       <div className="flex items-center gap-4 mb-8">
         <h2 className="display-2">{title}</h2>
-        <Link href="/mugs" className="btn btn-primary ml-auto shrink-0">
+        <Link href="/products" className="btn btn-primary ml-auto shrink-0">
           Shop all
         </Link>
       </div>
@@ -36,8 +36,8 @@ export default function ProductRow({
         ref={trackRef}
         className="flex gap-5 overflow-x-auto snap-x snap-mandatory pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        {mugs.map((mug) => (
-          <ProductCard key={mug.slug} mug={mug} badge={badge} />
+        {products.map((product) => (
+          <ProductCard key={product.slug} product={product} badge={badge} />
         ))}
       </div>
 

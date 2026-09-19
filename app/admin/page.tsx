@@ -1,16 +1,16 @@
 import Link from "next/link";
-import { Coffee, Receipt, Mail, ArrowRight } from "lucide-react";
+import { Amphora, Receipt, Mail, ArrowRight } from "lucide-react";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 async function getStats() {
   const supabase = getSupabaseAdmin();
-  const [mugs, orders, signups] = await Promise.all([
-    supabase.from("mugs").select("*", { count: "exact", head: true }),
+  const [products, orders, signups] = await Promise.all([
+    supabase.from("products").select("*", { count: "exact", head: true }),
     supabase.from("orders").select("*", { count: "exact", head: true }),
     supabase.from("kiln_signups").select("*", { count: "exact", head: true }),
   ]);
   return {
-    mugs: mugs.count ?? 0,
+    products: products.count ?? 0,
     orders: orders.count ?? 0,
     signups: signups.count ?? 0,
   };
@@ -20,7 +20,7 @@ export default async function AdminDashboard() {
   const stats = await getStats();
 
   const TILES = [
-    { href: "/admin/mugs", label: "Mugs in catalog", value: stats.mugs, Icon: Coffee },
+    { href: "/admin/products", label: "Products in catalog", value: stats.products, Icon: Amphora },
     { href: "/admin/orders", label: "Orders placed", value: stats.orders, Icon: Receipt },
     { href: "/admin/kiln-signups", label: "Kiln signups", value: stats.signups, Icon: Mail },
   ];

@@ -24,7 +24,7 @@ export default async function Hero() {
   })).find((b) => b.src);
 
   return (
-    <section className="relative w-full h-[560px] sm:h-[640px] md:h-[700px] overflow-hidden">
+    <section className="relative w-full aspect-[4/5] sm:aspect-[16/10] md:aspect-[21/9] min-h-[420px] max-h-[900px] overflow-hidden">
       {base &&
         BREAKPOINTS.map(({ src, position, className }) => {
           const imgSrc = (settings[src] as string | null) || base.src!;
@@ -33,7 +33,7 @@ export default async function Hero() {
             <img
               key={src}
               src={imgSrc}
-              alt="Sarautile ceramics"
+              alt="Sara Utile ceramics"
               className={`absolute inset-0 h-full w-full object-cover ${className}`}
               style={{ objectPosition: imgPosition }}
             />

@@ -3,14 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Heart, LayoutGrid, Menu, Search, ShoppingCart, User, X } from "lucide-react";
+import { Heart, Menu, Search, Shield, ShoppingCart, User, X } from "lucide-react";
 import { useUser, UserButton } from "@clerk/nextjs";
 import { useCart } from "@/components/CartContext";
 import { useWishlist } from "@/components/WishlistContext";
-import { MugIcon, StoryIcon, CareIcon, WholesaleIcon } from "@/components/icons";
+import { ProductsIcon, StoryIcon, CareIcon, WholesaleIcon } from "@/components/icons";
 
 const NAV = [
-  { href: "/mugs", label: "Mugs", Icon: MugIcon },
+  { href: "/products", label: "Shop", Icon: ProductsIcon },
   { href: "/story", label: "Our story", Icon: StoryIcon },
   { href: "/care", label: "Care", Icon: CareIcon },
   { href: "/wholesale", label: "Wholesale", Icon: WholesaleIcon },
@@ -44,10 +44,10 @@ export default function Header() {
       <div className="container-x flex items-center gap-4 sm:gap-6 h-16">
         <Link
           href="/"
-          aria-label="Sarautile Ceramics - home"
+          aria-label="Sara Utile Ceramics - home"
           className="site-logo mr-auto text-[1.05rem] sm:text-lg font-medium tracking-tight text-ink no-underline whitespace-nowrap transition-opacity hover:opacity-70"
         >
-          Sarautile Ceramics
+          Sara Utile Ceramics
         </Link>
 
         <nav className="hidden sm:flex items-center gap-7">
@@ -64,14 +64,14 @@ export default function Header() {
         </nav>
 
         <form
-          action="/mugs"
+          action="/products"
           className="hidden sm:flex items-center gap-2 h-9 rounded-full border border-rule-strong pl-3.5 pr-1.5 transition-colors focus-within:border-ink"
         >
           <Search size={14} strokeWidth={1.8} className="text-ink-faint shrink-0" />
           <input
             type="search"
             name="q"
-            placeholder="Search mugs…"
+            placeholder="Search ceramics…"
             className="w-28 md:w-40 bg-transparent text-sm text-ink placeholder:text-ink-faint focus:outline-none"
           />
         </form>
@@ -79,7 +79,7 @@ export default function Header() {
         <div className="header-actions hidden sm:flex items-center gap-2">
           {isAdmin && (
             <Link href="/admin" aria-label="Admin" className={iconBtn}>
-              <LayoutGrid size={16} strokeWidth={1.6} />
+              <Shield size={16} strokeWidth={1.6} />
             </Link>
           )}
           <Link href="/wishlist" aria-label="Wishlist" className={iconBtn}>
@@ -89,7 +89,11 @@ export default function Header() {
           {user ? (
             <UserButton />
           ) : (
-            <Link href="/signin" aria-label="Sign in" className={iconBtn}>
+            <Link
+              href={`/signin?redirect_url=${encodeURIComponent(pathname)}`}
+              aria-label="Sign in"
+              className={iconBtn}
+            >
               <User size={16} strokeWidth={1.6} />
             </Link>
           )}
@@ -134,14 +138,14 @@ export default function Header() {
       >
         <div className="container-x flex flex-col py-2">
           <form
-            action="/mugs"
+            action="/products"
             className="flex items-center gap-3 py-3 border-b border-rule"
           >
             <Search size={16} className="shrink-0 text-ink-faint" />
             <input
               type="search"
               name="q"
-              placeholder="Search mugs…"
+              placeholder="Search ceramics…"
               className="flex-1 bg-transparent text-[0.95rem] text-ink placeholder:text-ink-faint focus:outline-none"
             />
           </form>
@@ -167,7 +171,7 @@ export default function Header() {
               href="/admin"
               className="flex items-center gap-3 py-3 text-[0.95rem] text-ink no-underline border-b border-rule"
             >
-              <LayoutGrid size={16} className="shrink-0 text-ink-faint" />
+              <Shield size={16} className="shrink-0 text-ink-faint" />
               Admin
             </Link>
           )}
@@ -178,7 +182,7 @@ export default function Header() {
             </div>
           ) : (
             <Link
-              href="/signin"
+              href={`/signin?redirect_url=${encodeURIComponent(pathname)}`}
               className="flex items-center gap-3 py-3 text-[0.95rem] text-ink no-underline"
             >
               <User size={16} className="shrink-0 text-ink-faint" />

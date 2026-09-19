@@ -4,10 +4,11 @@ import Hero from "@/components/Hero";
 import KilnNotify from "@/components/KilnNotify";
 import ProductRow from "@/components/ProductRow";
 import ShopByCategory from "@/components/ShopByCategory";
+import ShopByCollection from "@/components/ShopByCollection";
 import { wholesaleFacts } from "@/lib/data";
-import { getCollection, getCategoriesWithMugs, getGlazeFilters } from "@/lib/queries";
+import { getCollection, getCategoriesWithProducts, getCollectionsWithProducts } from "@/lib/queries";
 
-// Same catalog/hero data as /mugs, which is already dynamic - prerendering
+// Same catalog/hero data as /products, which is already dynamic - prerendering
 // this at build time made a slow/unreachable Supabase response fail the
 // whole deploy (see "Gateway Timeout" prerendering "/").
 export const dynamic = "force-dynamic";
@@ -31,22 +32,24 @@ const VALUES = [
 ];
 
 export default async function Home() {
-  const [newArrivals, bestSellers, categories, glazeFilters] = await Promise.all([
+  const [newArrivals, bestSellers, categories, collections] = await Promise.all([
     getCollection("new-arrivals"),
     getCollection("bestsellers"),
-    getCategoriesWithMugs(),
-    getGlazeFilters(),
+    getCategoriesWithProducts(),
+    getCollectionsWithProducts(),
   ]);
 
   return (
     <>
       <Hero />
 
-      <ProductRow title="New arrivals" badge="New arrival" mugs={newArrivals} />
+      <ProductRow title="New arrivals" badge="New arrival" products={newArrivals} />
 
-      <ProductRow title="Our bestsellers" badge="Best seller" mugs={bestSellers} />
+      <ProductRow title="Our bestsellers" badge="Best seller" products={bestSellers} />
 
       <ShopByCategory categories={categories} />
+
+      <ShopByCollection collections={collections} />
 
       <section className="bg-sand border-y border-rule">
         <div className="container-x section grid gap-x-8 gap-y-10 md:grid-cols-3">
@@ -64,38 +67,6 @@ export default async function Home() {
           ))}
         </div>
       </section>
-
-      {glazeFilters.length > 0 && (
-        <section className="container-x section-tight rise">
-          <div className="mb-8">
-            <span className="kicker">Glazes, mixed by hand</span>
-            <h2 className="display-2 mt-2">Pick a colour</h2>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-            {glazeFilters.map((g) => (
-              <Link
-                key={g.name}
-                href="/mugs"
-                className="group flex flex-col gap-3 no-underline"
-              >
-                <span
-                  className="aspect-square block rounded-2xl shadow-[inset_0_0_0_1px_rgba(38,70,83,0.14)] transition-transform group-hover:-translate-y-1"
-                  style={{ background: g.hex }}
-                  aria-hidden
-                />
-                <span>
-                  <span className="block text-sm font-medium text-ink">
-                    {g.name}
-                  </span>
-                  <span className="block text-xs text-ink-faint mt-0.5">
-                    {g.desc}
-                  </span>
-                </span>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
 
       <section className="container-x section-tight">
         <div className="bg-[var(--ink)] text-paper rounded-3xl p-8 sm:p-12 grid md:grid-cols-[1.3fr_1fr] gap-8 items-center rise">

@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { X, Trash2, Gift, ArrowRight, ShoppingBag } from "lucide-react";
+import { X, Trash2, ArrowRight, ShoppingBag } from "lucide-react";
 import PlaceholderPhoto from "@/components/PlaceholderPhoto";
 import { useCart } from "@/components/CartContext";
-import { useMugs } from "@/components/MugsContext";
-import { resolveCart, POSTAGE } from "@/lib/cart";
+import { useProducts } from "@/components/ProductsContext";
+import { resolveCart } from "@/lib/cart";
 
 export default function CartDrawer() {
   const { open, setOpen, lines, setQty, remove } = useCart();
-  const { findMug } = useMugs();
+  const { findProduct } = useProducts();
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
 
@@ -54,8 +54,7 @@ export default function CartDrawer() {
 
   if (!mounted) return null;
 
-  const { items, subtotal, count } = resolveCart(lines, findMug);
-  const total = subtotal + (items.length ? POSTAGE : 0);
+  const { items, subtotal, count } = resolveCart(lines, findProduct);
 
   return (
     <div className="cart-overlay" data-open={visible}>
@@ -69,7 +68,7 @@ export default function CartDrawer() {
         <div className="flex items-baseline gap-2.5 px-6 pt-6 pb-4 border-b border-rule">
           <h3 className="display-3 text-[1.35rem]">Your cart</h3>
           <span className="text-xs text-ink-faint">
-            {count} {count === 1 ? "mug" : "mugs"}
+            {count} {count === 1 ? "piece" : "pieces"}
           </span>
           <button
             onClick={() => setOpen(false)}
@@ -85,20 +84,21 @@ export default function CartDrawer() {
             <ShoppingBag size={26} strokeWidth={1.5} className="text-ink-faint" />
             <p className="text-sm text-ink-soft">Your cart is empty.</p>
             <Link
-              href="/mugs"
+              href="/products"
               onClick={() => setOpen(false)}
               className="btn btn-ghost"
             >
-              Find a mug
+              Find something
             </Link>
           </div>
         ) : (
           <>
             <div className="flex-1 px-6 py-5 flex flex-col gap-5 overflow-y-auto">
               {items.map((item) => (
-                <div key={`${item.slug}-${item.glaze}`} className="flex gap-3.5">
+                <div key={item.slug} className="flex gap-3.5">
                   <PlaceholderPhoto
-                    label={item.mug.photoLabel}
+                    label={item.product.photoLabel}
+                    src={item.product.imageUrl}
                     rounded="rounded-[18px]"
                     className="w-[72px] h-[72px] flex-none"
                     sizes="72px"
@@ -106,19 +106,14 @@ export default function CartDrawer() {
                   <div className="flex-1">
                     <div className="flex items-baseline gap-2">
                       <span className="font-medium text-[0.95rem]">
-                        {item.mug.name}
+                        {item.product.name}
                       </span>
                       <span className="ml-auto text-sm">₹{item.lineTotal}</span>
                     </div>
-                    <span className="text-xs text-ink-faint">
-                      {item.glaze} · {item.mug.oz} oz
-                    </span>
                     <div className="flex items-center gap-3 mt-2">
                       <span className="inline-flex items-center gap-3 border border-rule-strong rounded-full px-3 py-1 text-sm">
                         <button
-                          onClick={() =>
-                            setQty(item.slug, item.glaze, item.qty - 1)
-                          }
+                          onClick={() => setQty(item.slug, item.qty - 1)}
                           className="cursor-pointer text-ink-soft leading-none hover:text-ink"
                           aria-label="Decrease quantity"
                         >
@@ -126,9 +121,7 @@ export default function CartDrawer() {
                         </button>
                         {item.qty}
                         <button
-                          onClick={() =>
-                            setQty(item.slug, item.glaze, item.qty + 1)
-                          }
+                          onClick={() => setQty(item.slug, item.qty + 1)}
                           className="cursor-pointer text-ink-soft leading-none hover:text-ink"
                           aria-label="Increase quantity"
                         >
@@ -136,7 +129,7 @@ export default function CartDrawer() {
                         </button>
                       </span>
                       <button
-                        onClick={() => remove(item.slug, item.glaze)}
+                        onClick={() => remove(item.slug)}
                         className="inline-flex items-center gap-1 text-xs text-ink-faint cursor-pointer transition-colors hover:text-ink"
                       >
                         <Trash2 size={12} strokeWidth={1.8} aria-hidden />
@@ -146,31 +139,12 @@ export default function CartDrawer() {
                   </div>
                 </div>
               ))}
-
-              <div className="card bg-sage-bg border-transparent px-4.5 py-4">
-                <span className="flex items-center gap-2 text-sm font-medium text-sage-ink">
-                  <Gift size={15} strokeWidth={1.8} aria-hidden />
-                  Wrap it in newspaper and string?
-                </span>
-                <p className="text-xs leading-relaxed text-sage-ink-soft mt-1.5">
-                  Free. We&apos;ll write your note on a card.{" "}
-                  <span className="underline cursor-pointer">Add a note</span>
-                </p>
-              </div>
             </div>
 
             <div className="px-6 pb-6 pt-5 border-t border-rule">
-              <div className="flex text-sm text-ink-soft">
-                <span>Subtotal</span>
-                <span className="ml-auto">₹{subtotal}</span>
-              </div>
-              <div className="flex text-sm text-ink-soft mt-1.5">
-                <span>Post (packed in straw)</span>
-                <span className="ml-auto">₹{POSTAGE}</span>
-              </div>
-              <div className="flex text-lg font-medium mt-3">
+              <div className="flex text-lg font-medium">
                 <span>Total</span>
-                <span className="ml-auto">₹{total}</span>
+                <span className="ml-auto">₹{subtotal}</span>
               </div>
               <Link
                 href="/checkout"

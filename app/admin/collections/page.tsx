@@ -3,6 +3,8 @@ import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import SubmitButton from "@/components/admin/SubmitButton";
 import { createCollection, deleteCollection } from "./actions";
 
+const RESERVED_SLUGS = new Set(["new-arrivals", "bestsellers"]);
+
 export default async function AdminCollectionsPage() {
   const { data: collections } = await getSupabaseAdmin()
     .from("collections")
@@ -15,8 +17,10 @@ export default async function AdminCollectionsPage() {
       <h1 className="display-2">Collections</h1>
       <p className="lede text-[0.95rem] mt-2">
         Curated homepage rows. The homepage shows a row for a collection only
-        when it has mugs in it - the <code>new-arrivals</code> and{" "}
+        when it has products in it - the <code>new-arrivals</code> and{" "}
         <code>bestsellers</code> slugs are what the homepage looks for.
+        Renaming or deleting either (marked below) empties that row on the
+        homepage.
       </p>
 
       <form action={createCollection} className="flex gap-3 mt-8">
@@ -37,6 +41,9 @@ export default async function AdminCollectionsPage() {
           >
             <span className="text-ink">{c.name}</span>
             <span className="text-xs text-ink-faint">/{c.slug}</span>
+            {RESERVED_SLUGS.has(c.slug) && (
+              <span className="badge bg-warn-bg text-warn-ink">Used by homepage</span>
+            )}
             <form action={deleteCollection.bind(null, c.slug)} className="ml-auto">
               <button
                 type="submit"

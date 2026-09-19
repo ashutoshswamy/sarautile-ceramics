@@ -1,8 +1,8 @@
 import Link from "next/link";
 import {
+  Amphora,
   BookOpen,
   Boxes,
-  Coffee,
   Droplets,
   Mail,
   MapPin,
@@ -14,8 +14,8 @@ const COLUMNS = [
   {
     heading: "Shop",
     links: [
-      { href: "/mugs", label: "All mugs", Icon: Coffee },
-      { href: "/mugs/seconds-shelf-mug", label: "Seconds shelf", Icon: Tag },
+      { href: "/products", label: "All products", Icon: Amphora },
+      { href: "/products/seconds-shelf-mug", label: "Seconds shelf", Icon: Tag },
     ],
   },
   {
@@ -35,11 +35,11 @@ export default function Footer() {
         <div className="grid gap-10 sm:grid-cols-[1.3fr_1fr_1fr_1fr]">
           <div>
             <span className="text-lg font-medium text-ink">
-              Sarautile Ceramics
+              Sara Utile Ceramics
             </span>
             <p className="lede text-sm mt-2 max-w-[34ch]">
-              Wheel-thrown stoneware mugs, glazed by hand and fired twice in a
-              workshop in India.
+              Wheel-thrown stoneware ceramics, glazed by hand and fired twice
+              in a workshop in India.
             </p>
           </div>
           {COLUMNS.map((col) => (
@@ -80,7 +80,7 @@ export default function Footer() {
           </nav>
         </div>
         <div className="flex flex-wrap items-center gap-2 mt-10 pt-6 border-t border-rule text-xs text-ink-faint">
-          <span>© {new Date().getFullYear()} Sarautile Ceramics</span>
+          <span>© {new Date().getFullYear()} Sara Utile Ceramics</span>
           <span aria-hidden>·</span>
           <MapPin size={13} strokeWidth={1.7} className="shrink-0" />
           <span>Thrown in India, since 2019</span>
