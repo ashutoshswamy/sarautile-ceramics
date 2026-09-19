@@ -11,6 +11,7 @@ import ToastFromQuery from "@/components/ToastFromQuery";
 import Loader from "@/components/Loader";
 import CartDrawer from "@/components/CartDrawer";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import SiteFooter from "@/components/SiteFooter";
 
 const dmSans = DM_Sans({
@@ -60,7 +61,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                   <Loader />
                   <Header />
                   <main className="flex-1">{children}</main>
-                  <SiteFooter />
+                  <SiteFooter>
+                    <Footer />
+                  </SiteFooter>
                   <CartDrawer />
                 </ToastProvider>
               </CartProvider>

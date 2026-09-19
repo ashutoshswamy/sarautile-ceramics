@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Heart, Menu, Search, Shield, ShoppingCart, User, X } from "lucide-react";
@@ -41,13 +42,14 @@ export default function Header() {
 
   return (
     <header className="site-header">
-      <div className="container-x flex items-center gap-4 sm:gap-6 h-16">
+      <div className="container-x flex items-center gap-4 sm:gap-6 h-20 sm:h-24">
         <Link
           href="/"
           aria-label="Sara Utile Ceramics - home"
-          className="site-logo mr-auto text-[1.05rem] sm:text-lg font-medium tracking-tight text-ink no-underline whitespace-nowrap transition-opacity hover:opacity-70"
+          className="site-logo mr-auto shrink-0 flex items-center gap-2 text-[1.05rem] sm:text-lg font-medium tracking-tight text-ink no-underline transition-opacity hover:opacity-70"
         >
-          Sara Utile Ceramics
+          <Image src="/logo-nobg.png" alt="" width={160} height={64} priority className="h-16 w-auto sm:h-20" />
+          <span className="whitespace-nowrap">Sara Utile Ceramics</span>
         </Link>
 
         <nav className="hidden sm:flex items-center gap-7">

@@ -1,16 +1,15 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import Footer from "@/components/Footer";
 import BrandWordmark from "@/components/BrandWordmark";
 
-export default function SiteFooter() {
+export default function SiteFooter({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   if (pathname?.startsWith("/admin")) return null;
 
   return (
     <>
-      <Footer />
+      {children}
       <BrandWordmark />
     </>
   );
