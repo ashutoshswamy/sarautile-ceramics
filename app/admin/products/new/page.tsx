@@ -49,6 +49,15 @@ export default async function AdminNewProductPage() {
           <input name="photo_label" required placeholder="ember tall mug" className="field" />
         </label>
         <label className="field-label">
+          Description (shown on the product page)
+          <textarea
+            name="description"
+            rows={4}
+            placeholder="A proper everyday piece: heavy enough to feel like something, light enough to handle with ease."
+            className="field"
+          />
+        </label>
+        <label className="field-label">
           Photos (up to 10, 5MB each — first one is the cover)
           <FilePickerField name="photo_files" accept="image/*" multiple />
         </label>

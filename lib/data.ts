@@ -12,6 +12,7 @@ export type Product = {
   imageUrl: string | null;
   images: string[];
   categorySlug: string | null;
+  description: string | null;
 };
 
 export const storyBits = [

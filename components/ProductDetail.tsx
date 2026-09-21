@@ -1,15 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Layers,
-  Droplets,
-  Scale,
-  ShoppingBag,
-  Clock,
-  Heart,
-  Check,
-} from "lucide-react";
+import { Layers, Droplets, Scale, ShoppingBag, Heart, Check } from "lucide-react";
 import PlaceholderPhoto from "@/components/PlaceholderPhoto";
 import { useCart } from "@/components/CartContext";
 import { useWishlist } from "@/components/WishlistContext";
@@ -80,13 +72,15 @@ export default function ProductDetail({ product }: { product: Product }) {
             />
           </button>
         </div>
-        <div className="flex items-baseline gap-3 mt-3">
-          <span className="text-2xl font-medium">₹{product.price}</span>
+        <div className="flex items-center gap-3 mt-3">
+          <span className="text-3xl font-medium tracking-tight">₹{product.price}</span>
+          <span className="rounded-full bg-warn-bg px-2.5 py-1 text-xs font-medium text-warn-ink">
+            {product.left}
+          </span>
         </div>
         <p className="lede text-[0.95rem] mt-5">
-          A proper everyday piece: heavy enough to feel like something, light
-          enough to handle with ease. Every curve is finished by hand, so it
-          fits a hand.
+          {product.description ||
+            "A proper everyday piece: heavy enough to feel like something, light enough to handle with ease. Every curve is finished by hand, so it fits a hand."}
         </p>
 
         <div className="flex flex-col min-[420px]:flex-row gap-3 mt-8 items-stretch min-[420px]:items-center">
@@ -116,11 +110,6 @@ export default function ProductDetail({ product }: { product: Product }) {
             {added ? "Added" : `Add to cart — ₹${lineTotal}`}
           </button>
         </div>
-        <p className="flex items-center gap-1.5 text-xs text-terracotta-dark mt-3">
-          <Clock size={13} strokeWidth={1.8} aria-hidden />
-          Only {product.left}.
-        </p>
-
         <div className="flex flex-col border-t border-rule mt-8 empty:hidden">
           {specs.map((s) => {
             const SpecIcon = SPEC_ICON[s.k];

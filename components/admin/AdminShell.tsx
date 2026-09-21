@@ -16,6 +16,7 @@ import {
   Star,
   Mail,
   Package,
+  Camera,
   ExternalLink,
   Menu,
   Settings,
@@ -35,6 +36,7 @@ const NAV = [
   { href: "/admin/reviews", label: "Reviews", Icon: Star },
   { href: "/admin/kiln-signups", label: "Kiln signups", Icon: Mail },
   { href: "/admin/wholesale", label: "Wholesale", Icon: Package },
+  { href: "/admin/instagram", label: "Instagram", Icon: Camera },
   { href: "/admin/settings", label: "Settings", Icon: Settings },
 ];
 
@@ -99,10 +101,6 @@ export default function AdminShell({
       <aside className="hidden md:flex md:flex-col md:gap-8 md:sticky md:top-16 md:h-[calc(100vh-4rem)] md:overflow-y-auto border-r border-rule px-5 py-8">
         <NavLinks pathname={pathname} />
         <div className="mt-auto flex flex-col gap-4">
-          <div>
-            <span className="kicker">Admin</span>
-            <p className="text-sm text-ink-soft mt-1 truncate">{userLabel}</p>
-          </div>
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-xs text-ink-faint no-underline hover:text-ink"

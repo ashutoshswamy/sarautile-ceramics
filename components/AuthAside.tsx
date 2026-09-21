@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const COPY = {
@@ -34,12 +36,18 @@ export default function AuthAside() {
         className="pointer-events-none absolute -bottom-32 -right-24 w-[28rem] h-[28rem] rounded-full bg-sage-ink-soft/10 blur-3xl"
       />
 
-      <div key={modeKey} className="auth-fade relative z-10 max-w-[24rem]">
-        <span className="kicker">{c.kicker}</span>
-        <p className="display-1 mt-4 text-[clamp(1.9rem,2.6vw,2.7rem)]">
-          {c.asideTitle}
-        </p>
-        <p className="lede text-[0.95rem] mt-5">{c.asideBody}</p>
+      <div className="relative z-10 max-w-[24rem]">
+        <Link href="/" className="inline-block shrink-0">
+          <Image src="/logo-nobg.png" alt="" width={160} height={64} className="h-14 w-auto xl:h-16" />
+        </Link>
+
+        <div key={modeKey} className="auth-fade mt-10">
+          <span className="kicker">{c.kicker}</span>
+          <p className="display-1 mt-4 text-[clamp(1.9rem,2.6vw,2.7rem)]">
+            {c.asideTitle}
+          </p>
+          <p className="lede text-[0.95rem] mt-5">{c.asideBody}</p>
+        </div>
       </div>
 
       <div className="relative z-10 flex items-center gap-2.5 text-xs text-ink-faint">

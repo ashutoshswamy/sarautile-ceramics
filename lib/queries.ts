@@ -10,6 +10,7 @@ type ProductRow = {
   photo_label: string;
   image_url: string | null;
   category_slug: string | null;
+  description: string | null;
 };
 
 type ProductImageRow = {
@@ -32,6 +33,7 @@ function assemble(productRows: ProductRow[], imageRows: ProductImageRow[]): Prod
       .sort((a, b) => a.position - b.position)
       .map((i) => i.url),
     categorySlug: p.category_slug,
+    description: p.description,
   }));
 }
 
@@ -188,4 +190,16 @@ export async function getReviews(productSlug: string): Promise<Review[]> {
     comment: r.comment,
     customerName: r.customer_name,
   }));
+}
+
+export type InstagramPost = { id: number; url: string };
+
+/** Latest Instagram posts, newest first - managed from /admin/instagram. */
+export async function getInstagramPosts(): Promise<InstagramPost[]> {
+  const { data, error } = await getSupabase()
+    .from("instagram_posts")
+    .select("id, url")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
 }

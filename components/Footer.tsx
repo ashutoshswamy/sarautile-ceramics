@@ -27,7 +27,6 @@ export default async function Footer() {
           <div>
             <span className="flex items-center gap-2">
               <Image src="/logo-nobg.png" alt="" width={160} height={64} className="h-20 w-auto" />
-              <span className="text-lg font-medium text-ink">Sara Utile Ceramics</span>
             </span>
             <p className="lede text-sm mt-2 max-w-[34ch]">
               Wheel-thrown stoneware ceramics, glazed by hand and fired twice

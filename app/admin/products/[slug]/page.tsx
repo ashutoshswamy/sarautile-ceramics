@@ -124,6 +124,16 @@ export default async function AdminEditProductPage(
           Photo label (alt text, and the empty-state placeholder until a photo is uploaded)
           <input name="photo_label" defaultValue={product.photoLabel} required className="field" />
         </label>
+        <label className="field-label">
+          Description (shown on the product page)
+          <textarea
+            name="description"
+            rows={4}
+            defaultValue={product.description ?? ""}
+            placeholder="A proper everyday piece: heavy enough to feel like something, light enough to handle with ease."
+            className="field"
+          />
+        </label>
 
         <label className="field-label">
           Category

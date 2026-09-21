@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ChevronRight, Plus } from "lucide-react";
+import PlaceholderPhoto from "@/components/PlaceholderPhoto";
 import { getProducts } from "@/lib/queries";
 
 export default async function AdminProductsPage() {
@@ -29,6 +30,7 @@ export default async function AdminProductsPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-canvas text-left text-xs text-ink-faint uppercase tracking-wide">
+              <th className="px-4 py-3 font-medium" />
               <th className="px-4 py-3 font-medium">Name</th>
               <th className="px-4 py-3 font-medium">Price</th>
               <th className="px-4 py-3 font-medium">Left</th>
@@ -38,6 +40,15 @@ export default async function AdminProductsPage() {
           <tbody>
             {products.map((product) => (
               <tr key={product.slug} className="border-t border-rule">
+                <td className="px-4 py-3">
+                  <PlaceholderPhoto
+                    label={product.photoLabel}
+                    src={product.imageUrl}
+                    rounded="rounded-lg"
+                    className="w-11 h-11"
+                    sizes="44px"
+                  />
+                </td>
                 <td className="px-4 py-3 font-medium text-ink">{product.name}</td>
                 <td className="px-4 py-3 text-ink-soft">₹{product.price}</td>
                 <td className="px-4 py-3 text-ink-soft">{product.left}</td>

@@ -81,6 +81,7 @@ export async function updateProduct(slug: string, formData: FormData) {
         weight: formData.get("weight") || null,
         left_count: Number(formData.get("left_count")),
         photo_label: formData.get("photo_label"),
+        description: formData.get("description") || null,
         category_slug: formData.get("category_slug") || null,
         ...(imageUrl ? { image_url: imageUrl } : {}),
       })
@@ -125,6 +126,7 @@ export async function createProduct(formData: FormData) {
       weight: formData.get("weight") || null,
       left_count: Number(formData.get("left_count")),
       photo_label: formData.get("photo_label"),
+      description: formData.get("description") || null,
       image_url: imageUrls[0] ?? null,
       category_slug: formData.get("category_slug") || null,
     });

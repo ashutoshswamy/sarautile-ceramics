@@ -5,8 +5,14 @@ import KilnNotify from "@/components/KilnNotify";
 import ProductRow from "@/components/ProductRow";
 import ShopByCategory from "@/components/ShopByCategory";
 import ShopByCollection from "@/components/ShopByCollection";
+import InstagramFeed from "@/components/InstagramFeed";
 import { wholesaleFacts } from "@/lib/data";
-import { getCollection, getCategoriesWithProducts, getCollectionsWithProducts } from "@/lib/queries";
+import {
+  getCollection,
+  getCategoriesWithProducts,
+  getCollectionsWithProducts,
+  getInstagramPosts,
+} from "@/lib/queries";
 
 // Same catalog/hero data as /products, which is already dynamic - prerendering
 // this at build time made a slow/unreachable Supabase response fail the
@@ -32,11 +38,12 @@ const VALUES = [
 ];
 
 export default async function Home() {
-  const [newArrivals, bestSellers, categories, collections] = await Promise.all([
+  const [newArrivals, bestSellers, categories, collections, instagramPosts] = await Promise.all([
     getCollection("new-arrivals"),
     getCollection("bestsellers"),
     getCategoriesWithProducts(),
     getCollectionsWithProducts(),
+    getInstagramPosts(),
   ]);
 
   return (
@@ -52,19 +59,28 @@ export default async function Home() {
       <ShopByCollection collections={collections} />
 
       <section className="bg-sand border-y border-rule">
-        <div className="container-x section grid gap-x-8 gap-y-10 md:grid-cols-3">
-          {VALUES.map((value) => (
-            <div key={value.title} className="rise">
-              <value.Icon
-                size={22}
-                strokeWidth={1.6}
-                className="text-terracotta"
-                aria-hidden
-              />
-              <h3 className="display-3 mt-3.5">{value.title}</h3>
-              <p className="lede text-[0.95rem] mt-2.5">{value.body}</p>
-            </div>
-          ))}
+        <div className="container-x section">
+          <div className="mb-10 text-center">
+            <span className="kicker">Behind the scenes</span>
+            <h2 className="display-2 mt-2">How we work</h2>
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            {VALUES.map((value, i) => (
+              <div
+                key={value.title}
+                className="rise relative bg-paper border border-rule rounded-2xl p-7 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_-24px_rgba(38,70,83,0.35)]"
+              >
+                <span className="absolute top-6 right-7 text-[2.5rem] font-semibold leading-none text-ink/[0.05] select-none">
+                  0{i + 1}
+                </span>
+                <div className="grid place-items-center w-12 h-12 rounded-full bg-terracotta/10">
+                  <value.Icon size={22} strokeWidth={1.6} className="text-terracotta" aria-hidden />
+                </div>
+                <h3 className="display-3 mt-5">{value.title}</h3>
+                <p className="lede text-[0.95rem] mt-2.5">{value.body}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -101,6 +117,8 @@ export default async function Home() {
           <KilnNotify />
         </div>
       </section>
+
+      <InstagramFeed posts={instagramPosts} />
     </>
   );
 }
