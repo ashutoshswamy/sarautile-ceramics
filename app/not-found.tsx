@@ -1,18 +1,11 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import Video404 from "@/components/video-404";
 
 export default function NotFound() {
   return (
     <section className="container-x flex flex-col items-center text-center py-20 sm:py-28">
-      <Image
-        src="/404.png"
-        alt=""
-        width={220}
-        height={220}
-        priority
-        className="w-40 sm:w-52 h-auto"
-      />
+      <Video404 />
       <span className="kicker mt-8">404</span>
       <h1 className="display-2 mt-3">This piece didn&apos;t make it out of the kiln.</h1>
       <p className="lede text-[0.95rem] mt-3 max-w-[36ch]">
