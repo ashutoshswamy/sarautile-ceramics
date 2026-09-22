@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, Palette, Flame, Hand } from "lucide-react";
+import Image from "next/image";
+import { ArrowRight } from "lucide-react";
 import Hero from "@/components/Hero";
 import KilnNotify from "@/components/KilnNotify";
 import ProductRow from "@/components/ProductRow";
@@ -23,19 +24,25 @@ export const dynamic = "force-dynamic";
 
 const VALUES = [
   {
-    Icon: Palette,
+    image: "/step1.png",
     title: "We mix the glazes",
     body: "Five recipes, ground in a bucket out back. Ember is the one everyone comes for.",
+    ink: "text-neutral-ink",
+    tilt: "-rotate-3",
   },
   {
-    Icon: Flame,
+    image: "/step2.png",
     title: "One firing a fortnight",
     body: "The kiln takes what it takes. Sign up and we'll nudge you when the door opens.",
+    ink: "text-gold-ink",
+    tilt: "rotate-2",
   },
   {
-    Icon: Hand,
+    image: "/step3.png",
     title: "Made to be used",
     body: "Chip it, stain it, love it. And if it arrives broken we'll throw you another.",
+    ink: "text-sage-ink",
+    tilt: "-rotate-2",
   },
 ];
 
@@ -62,23 +69,55 @@ export default async function Home() {
 
       <section className="bg-sand border-y border-rule">
         <div className="container-x section">
-          <div className="mb-10 text-center">
+          <div className="mb-10 max-w-xl">
             <span className="kicker">Behind the scenes</span>
             <h2 className="display-2 mt-2">How we work</h2>
+            <p className="lede text-[0.95rem] mt-2.5">
+              Same three steps, every single batch — mixed, fired, and sent off to get used.
+            </p>
           </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {VALUES.map((value, i) => (
-              <ValueCard key={value.title}>
-                <span className="absolute top-6 right-7 text-[2.5rem] font-semibold leading-none text-ink/[0.05] select-none">
-                  0{i + 1}
-                </span>
-                <div className="grid place-items-center w-12 h-12 rounded-full bg-terracotta/10">
-                  <value.Icon size={22} strokeWidth={1.6} className="text-terracotta" aria-hidden />
-                </div>
-                <h3 className="display-3 mt-5">{value.title}</h3>
-                <p className="lede text-[0.95rem] mt-2.5">{value.body}</p>
-              </ValueCard>
-            ))}
+          <div className="relative">
+            <div
+              aria-hidden
+              className="hidden md:block absolute left-1/2 -translate-x-1/2 inset-y-0 -z-10 border-l-2 border-dashed border-rule-strong/50"
+            />
+            <div className="space-y-16 md:space-y-24">
+              {VALUES.map((value, i) => {
+                const reversed = i % 2 === 1;
+                return (
+                  <ValueCard key={value.title}>
+                    <div className="relative grid md:grid-cols-2 gap-8 md:gap-16 items-center">
+                      <div className={`grid place-items-center ${reversed ? "md:order-2" : ""}`}>
+                        <Image
+                          src={value.image}
+                          alt=""
+                          width={420}
+                          height={420}
+                          className={`w-72 h-72 md:w-96 md:h-96 object-contain ${value.tilt}`}
+                        />
+                      </div>
+                      <div className={reversed ? "md:order-1 md:text-right" : ""}>
+                        <span
+                          className={`block text-[0.6875rem] font-semibold tracking-[0.15em] uppercase ${value.ink}`}
+                        >
+                          Step 0{i + 1}
+                        </span>
+                        <h3 className="display-2 mt-2">{value.title}</h3>
+                        <p className={`lede text-[0.95rem] mt-3 max-w-md ${reversed ? "md:ml-auto" : ""}`}>
+                          {value.body}
+                        </p>
+                      </div>
+                      <span
+                        aria-hidden
+                        className={`hidden md:grid absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 place-items-center w-11 h-11 rounded-full border border-rule bg-paper ring-8 ring-sand text-[0.75rem] font-semibold ${value.ink}`}
+                      >
+                        0{i + 1}
+                      </span>
+                    </div>
+                  </ValueCard>
+                );
+              })}
+            </div>
           </div>
         </div>
       </section>
@@ -106,14 +145,27 @@ export default async function Home() {
       </section>
 
       <section className="container-x section-tight border-t border-rule">
-        <Reveal className="max-w-md">
-          <span className="kicker">One firing a fortnight</span>
-          <h2 className="display-2 mt-2">Get a text when the kiln opens</h2>
-          <p className="lede text-[0.95rem] mt-2.5 mb-6">
-            No spam, no weekly newsletter - just a heads up when a fresh batch
-            is ready to buy, before it sells out.
-          </p>
-          <KilnNotify />
+        <Reveal className="bg-[var(--ink)] rounded-3xl overflow-hidden grid md:grid-cols-2 items-center">
+          <div className="p-8 sm:p-12">
+            <span className="kicker text-terracotta-light">One firing a fortnight</span>
+            <h2 className="display-2 mt-2 text-paper">Get a text when the kiln opens</h2>
+            <p className="mt-2.5 mb-6 text-[0.95rem] leading-relaxed text-paper/70 max-w-md">
+              No spam, no weekly newsletter - just a heads up when a fresh batch
+              is ready to buy, before it sells out.
+            </p>
+            <KilnNotify />
+          </div>
+          <div className="p-8 sm:p-10 flex items-center justify-center md:self-stretch">
+            <div className="relative w-full max-w-[260px] aspect-square rounded-2xl overflow-hidden">
+              <Image
+                src="/newsletter.png"
+                alt=""
+                fill
+                sizes="260px"
+                className="object-cover"
+              />
+            </div>
+          </div>
         </Reveal>
       </section>
 

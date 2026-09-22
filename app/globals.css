@@ -364,6 +364,9 @@ textarea.field {
   inset: 0;
   z-index: 50;
   pointer-events: none;
+  display: flex;
+  justify-content: center;
+  padding-top: 12vh;
 }
 .search-overlay[data-open="true"] {
   pointer-events: auto;
@@ -377,11 +380,8 @@ textarea.field {
   opacity: 0;
 }
 .search-overlay__panel {
-  position: absolute;
-  top: 12vh;
-  left: 50%;
   width: calc(100% - 2.5rem);
-  max-width: 560px;
+  max-width: 720px;
   max-height: 70vh;
   display: flex;
   flex-direction: column;
@@ -391,7 +391,7 @@ textarea.field {
   border-radius: 1.25rem;
   box-shadow: 0 30px 70px -20px rgba(38, 70, 83, 0.45);
   opacity: 0;
-  transform: translate(-50%, -8px) scale(0.98);
+  transform: translateY(-8px) scale(0.98);
   overflow: hidden;
 }
 .search-overlay__results {
@@ -462,9 +462,13 @@ dialog.confirm-dialog::backdrop {
   color: inherit;
 }
 .product-card__media {
-  z-index: 1; /* outrank the name-link's stretched ::after (z-index: 0) once hover's transform gives this its own stacking context */
+  z-index: 1; /* stack above the name-link's stretched ::after (z-index: 0) */
   border-radius: 1.5rem;
   overflow: hidden;
+  transition: box-shadow 0.25s ease;
+}
+.product-card:hover .product-card__media {
+  box-shadow: var(--shadow-card);
 }
 /* hover lift + photo zoom is now GSAP - see components/ProductGridCard.tsx */
 

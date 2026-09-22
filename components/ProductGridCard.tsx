@@ -20,7 +20,7 @@ export default function ProductGridCard({ product }: { product: Product }) {
     if (!media || !photo) return;
 
     const tl = gsap.timeline({ paused: true });
-    tl.to(media, { y: -4, boxShadow: "var(--shadow-card)", duration: 0.25, ease: "power2.out" }, 0);
+    tl.to(media, { y: -4, duration: 0.25, ease: "power2.out" }, 0);
     tl.to(photo, { scale: 1.04, duration: 0.4, ease: "power2.out" }, 0);
     tl.to(name, { color: "var(--terracotta-hover)", duration: 0.15, ease: "power2.out" }, 0);
 
@@ -37,12 +37,14 @@ export default function ProductGridCard({ product }: { product: Product }) {
   return (
     <div ref={cardRef} className="product-card relative">
       <div className="product-card__media relative">
-        <PlaceholderPhoto
-          label={product.photoLabel}
-          src={product.imageUrl}
-          rounded="rounded-none"
-          className="aspect-square"
-        />
+        <Link href={`/products/${product.slug}`} className="block aspect-square" tabIndex={-1} aria-hidden>
+          <PlaceholderPhoto
+            label={product.photoLabel}
+            src={product.imageUrl}
+            rounded="rounded-none"
+            className="w-full h-full"
+          />
+        </Link>
         <WishlistButton slug={product.slug} className="absolute top-2.5 right-2.5" />
       </div>
       <div className="flex flex-col gap-1">

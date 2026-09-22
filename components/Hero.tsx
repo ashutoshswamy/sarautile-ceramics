@@ -5,11 +5,15 @@ import Link from "next/link";
 import { gsap, useHoverTween } from "@/lib/gsap";
 import HeroPotAnimation from "@/components/HeroPotAnimation";
 
+// ponytail: module-scoped, not sessionStorage - resets on a hard refresh (wanted)
+// but survives client-side nav away from and back to "/" (also wanted).
+let hasPlayedThisLoad = false;
+
 export default function Hero() {
   const textRef = useRef<HTMLDivElement>(null);
   const videoWrapRef = useRef<HTMLDivElement>(null);
   const ctaRef = useRef<HTMLAnchorElement>(null);
-  const [videoDone, setVideoDone] = useState(false);
+  const [videoDone, setVideoDone] = useState(hasPlayedThisLoad);
 
   useHoverTween(ctaRef, { backgroundColor: "var(--terracotta-hover)" });
 
@@ -32,6 +36,7 @@ export default function Hero() {
   };
 
   const handleVideoEnd = () => {
+    hasPlayedThisLoad = true;
     if (!videoWrapRef.current) return setVideoDone(true);
     gsap.to(videoWrapRef.current, {
       xPercent: 100,

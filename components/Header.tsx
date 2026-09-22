@@ -1,25 +1,24 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Heart, Layers, Menu, Search, Shield, ShoppingCart, User, X } from "lucide-react";
+import { ArrowRight, Heart, Layers, Menu, Search, Shield, ShoppingCart, User, X } from "lucide-react";
 import { useUser, UserButton } from "@clerk/nextjs";
 import { useCart } from "@/components/CartContext";
 import { useWishlist } from "@/components/WishlistContext";
 import { useProducts } from "@/components/ProductsContext";
 import PlaceholderPhoto from "@/components/PlaceholderPhoto";
-import { ProductsIcon, StoryIcon, CareIcon, WholesaleIcon } from "@/components/icons";
+import { ProductsIcon, CareIcon } from "@/components/icons";
 import { gsap, useGSAP } from "@/lib/gsap";
 
 const MAX_SUGGESTIONS_PER_GROUP = 4;
 
 const NAV = [
   { href: "/products", label: "Shop", Icon: ProductsIcon },
-  { href: "/story", label: "Our story", Icon: StoryIcon },
   { href: "/care", label: "Care", Icon: CareIcon },
-  { href: "/wholesale", label: "Wholesale", Icon: WholesaleIcon },
 ];
 
 // GSAP replacement for the old `.nav-link:hover .icon-write/.icon-drop/.icon-box`
@@ -215,7 +214,6 @@ export default function Header() {
         gsap.to(scrim, { autoAlpha: 1, duration: d ?? 0.28, ease: "power1.out" });
         gsap.to(panel, {
           autoAlpha: 1,
-          x: "-50%",
           y: 0,
           scale: 1,
           duration: d ?? 0.24,
@@ -225,7 +223,6 @@ export default function Header() {
         gsap.to(scrim, { autoAlpha: 0, duration: d ?? 0.28, ease: "power1.out" });
         gsap.to(panel, {
           autoAlpha: 0,
-          x: "-50%",
           y: -8,
           scale: 0.98,
           duration: d ?? 0.24,
@@ -303,6 +300,9 @@ export default function Header() {
             <ShoppingCart size={16} strokeWidth={1.6} />
             <Badge n={cartCount} />
           </button>
+          <Link href="/products" className="btn btn-primary ml-1">
+            Shop now <ArrowRight size={16} strokeWidth={1.8} aria-hidden />
+          </Link>
         </div>
 
         <button
@@ -389,10 +389,11 @@ export default function Header() {
         </div>
       </nav>
 
-      <div
-        className="search-overlay"
-        style={{ pointerEvents: searchOpen ? "auto" : "none" }}
-      >
+      {typeof document !== "undefined" && createPortal(
+        <div
+          className="search-overlay"
+          style={{ pointerEvents: searchOpen ? "auto" : "none" }}
+        >
         <div
           ref={searchScrimRef}
           className="search-overlay__scrim"
@@ -402,7 +403,7 @@ export default function Header() {
         <div
           ref={searchPanelRef}
           className="search-overlay__panel"
-          style={{ opacity: 0, transform: "translate(-50%, -8px) scale(0.98)" }}
+          style={{ opacity: 0, transform: "translateY(-8px) scale(0.98)" }}
           role="dialog"
           aria-modal="true"
           aria-label="Search"
@@ -499,7 +500,9 @@ export default function Header() {
             </div>
           )}
         </div>
-      </div>
+        </div>,
+        document.body
+      )}
     </header>
   );
 }

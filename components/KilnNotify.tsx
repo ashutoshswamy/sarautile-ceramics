@@ -23,7 +23,7 @@ export default function KilnNotify() {
 
   if (sent) {
     return (
-      <p className="lede text-[0.95rem]">
+      <p className="text-[0.95rem] text-paper/80">
         You&apos;re on the list - we&apos;ll text you when kiln 42 opens.
       </p>
     );
@@ -42,7 +42,7 @@ export default function KilnNotify() {
       <button type="submit" className="btn btn-primary shrink-0">
         Notify me
       </button>
-      {error && <p className="text-sm text-warn-ink w-full">{error}</p>}
+      {error && <p className="text-sm text-terracotta-light w-full">{error}</p>}
     </form>
   );
 }

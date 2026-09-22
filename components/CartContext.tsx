@@ -26,8 +26,11 @@ type CartContextValue = {
 
 const CartContext = createContext<CartContextValue | null>(null);
 
+const describeError = (error: unknown) =>
+  error instanceof Error ? error.message : JSON.stringify(error);
+
 const logIfError = ({ error }: { error: unknown }) => {
-  if (error) console.error("cart sync failed:", error);
+  if (error) console.error("cart sync failed:", describeError(error));
 };
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
@@ -49,7 +52,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       .select("product_slug, qty")
       .then(({ data, error }) => {
         if (cancelled) return;
-        if (error) return console.error("cart load failed:", error);
+        if (error) return console.error("cart load failed:", describeError(error));
         setLines((data ?? []).map((r) => ({ slug: r.product_slug, qty: r.qty })));
       });
     return () => {

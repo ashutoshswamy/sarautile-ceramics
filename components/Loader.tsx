@@ -9,6 +9,10 @@ import { gsap, useGSAP } from "@/lib/gsap";
 const VIDEO_DURATION_MS = 5000;
 const FALLBACK_MS = VIDEO_DURATION_MS + 1000;
 
+// ponytail: module-scoped, not sessionStorage - resets on a hard refresh (wanted)
+// but survives client-side nav away from and back to "/" (also wanted).
+let hasPlayedThisLoad = false;
+
 // ponytail: the video's white background can't carry an alpha channel as an
 // mp4, and WebM/VP9 alpha isn't supported in Safari - so instead of shipping
 // a second video format, key the white out live, per frame, onto a canvas.
@@ -33,8 +37,8 @@ function keyOutWhite(ctx: CanvasRenderingContext2D, width: number, height: numbe
 
 export default function Loader() {
   const pathname = usePathname();
-  const [hide, setHide] = useState(false);
-  const [gone, setGone] = useState(false);
+  const [hide, setHide] = useState(hasPlayedThisLoad);
+  const [gone, setGone] = useState(hasPlayedThisLoad);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -44,7 +48,8 @@ export default function Loader() {
   const isHome = pathname === "/";
 
   useEffect(() => {
-    if (!isHome) return;
+    if (!isHome || hasPlayedThisLoad) return;
+    hasPlayedThisLoad = true;
     const t = setTimeout(() => setHide(true), FALLBACK_MS);
     return () => clearTimeout(t);
   }, [isHome]);

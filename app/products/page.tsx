@@ -53,8 +53,8 @@ export default async function ProductsPage(props: PageProps<"/products">) {
         {categories.length > 0 && (
           <div>
             <span className="kicker">Category</span>
-            <div className="flex flex-col gap-2 mt-3.5">
-              <CategoryPill href="/products" active={!activeCategory}>
+            <div className="flex flex-wrap gap-2 mt-3.5">
+              <CategoryPill href="/products" active={!activeCategory} count={allProducts.length}>
                 All
               </CategoryPill>
               {categories.map((c) => (
@@ -62,6 +62,7 @@ export default async function ProductsPage(props: PageProps<"/products">) {
                   key={c.slug}
                   href={`/products?category=${c.slug}`}
                   active={activeCategory?.slug === c.slug}
+                  count={allProducts.filter((p) => p.categorySlug === c.slug).length}
                 >
                   {c.name}
                 </CategoryPill>

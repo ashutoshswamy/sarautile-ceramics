@@ -7,10 +7,7 @@ import { gsap, useGSAP, useHoverTween } from "@/lib/gsap";
 // hover:shadow-[...]"` - scroll reveal + hover lift, both GSAP-driven here.
 export default function ValueCard({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
-  useHoverTween(ref, {
-    y: -4,
-    boxShadow: "0 20px 40px -24px rgba(38,70,83,0.35)",
-  });
+  useHoverTween(ref, { y: -3 });
 
   useGSAP(() => {
     const el = ref.current;
@@ -37,7 +34,7 @@ export default function ValueCard({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <div ref={ref} className="relative bg-paper border border-rule rounded-2xl p-7">
+    <div ref={ref} className="relative">
       {children}
     </div>
   );

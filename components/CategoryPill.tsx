@@ -8,10 +8,12 @@ import { useHoverTween } from "@/lib/gsap";
 export default function CategoryPill({
   href,
   active,
+  count,
   children,
 }: {
   href: string;
   active: boolean;
+  count?: number;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLAnchorElement>(null);
@@ -22,11 +24,14 @@ export default function CategoryPill({
     <Link
       ref={ref}
       href={href}
-      className={`px-3 py-1.5 rounded-full border text-sm no-underline ${
+      className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border text-sm no-underline ${
         active ? "border-ink bg-ink text-paper" : "border-rule text-ink"
       }`}
     >
       {children}
+      {typeof count === "number" && (
+        <span className={active ? "text-paper/60" : "text-ink-faint"}>{count}</span>
+      )}
     </Link>
   );
 }
