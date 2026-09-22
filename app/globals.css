@@ -1,33 +1,33 @@
 @import "tailwindcss";
 
 :root {
-  /* palette: white base, rainbow accents - orange #ff4f1f, green #12b76a, yellow #ffcd1a, pink #d6006f, blue #0b63c4 */
-  --paper: #ffffff;
-  --paper-tint: #fafafa;
-  --canvas: #f0f1f5;
-  --sand: #fff4e0;
-  --ink: #17171a;
-  --ink-soft: #52525b;
-  --ink-faint: #8b8b93;
-  --rule: rgba(23, 23, 26, 0.12);
-  --rule-strong: rgba(23, 23, 26, 0.28);
-  --terracotta: #ff4f1f;
-  --terracotta-dark: #d93a0f;
-  --terracotta-hover: #ff6b3d;
-  --terracotta-light: #ffb299;
-  --sage-bg: #d2fbea;
-  --sage-ink: #067a46;
-  --sage-ink-soft: #12b76a;
-  --warn-bg: #ffe0ef;
-  --warn-ink: #d6006f;
-  --gold: #ffcd1a;
-  --gold-bg: #fff3b8;
+  /* palette: "Clayful" - coral clay primary, peach/lavender/mint/butter accents */
+  --paper: #fff7ed;
+  --paper-tint: #ffffff;
+  --canvas: #fbefdf;
+  --sand: #ffefd9;
+  --ink: #33243a;
+  --ink-soft: #66796f;
+  --ink-faint: #9ca79e;
+  --rule: rgba(51, 36, 58, 0.12);
+  --rule-strong: rgba(51, 36, 58, 0.28);
+  --terracotta: #f25c54;
+  --terracotta-dark: #c23f38;
+  --terracotta-hover: #ff9b71;
+  --terracotta-light: #ffc9c4;
+  --sage-bg: #dff3e9;
+  --sage-ink: #3f8c68;
+  --sage-ink-soft: #7bc9a4;
+  --warn-bg: #f8dedc;
+  --warn-ink: #8a2f29;
+  --gold: #ffd166;
+  --gold-bg: #fff0c9;
   --gold-ink: #8a6400;
-  --neutral-bg: #dceeff;
-  --neutral-ink: #0b63c4;
-  --shadow-sm: 0 1px 2px rgba(23, 23, 26, 0.08);
-  --shadow-card: 0 1px 2px rgba(23, 23, 26, 0.06),
-    0 18px 40px -20px rgba(23, 23, 26, 0.28);
+  --neutral-bg: #ede7fc;
+  --neutral-ink: #6d4fc7;
+  --shadow-sm: 0 1px 2px rgba(51, 36, 58, 0.08);
+  --shadow-card: 0 1px 2px rgba(51, 36, 58, 0.06),
+    0 18px 40px -20px rgba(51, 36, 58, 0.28);
 }
 
 @theme inline {
@@ -239,54 +239,8 @@
   text-decoration: none;
   font-weight: 600;
 }
-.nav-link::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 100%;
-  bottom: -5px;
-  height: 1.5px;
-  background: currentColor;
-  transition: right 0.24s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.nav-link:hover::after {
-  right: 0;
-}
-
-/* nav icon micro-animations, on by hover */
-.nav-link:hover .icon-write {
-  animation: icon-write-wiggle 1.2s ease-in-out;
-  transform-box: fill-box;
-  transform-origin: 85% 85%;
-}
-@keyframes icon-write-wiggle {
-  0%, 100% { transform: rotate(0deg); }
-  12.5%, 62.5% { transform: rotate(-16deg); }
-  37.5%, 87.5% { transform: rotate(10deg); }
-}
-
-.nav-link:hover .icon-drop {
-  opacity: 0;
-  animation: icon-drop-in 0.45s ease both;
-}
-.nav-link:hover .icon-drop-1 { animation-delay: 0s; }
-.nav-link:hover .icon-drop-2 { animation-delay: 0.2s; }
-@keyframes icon-drop-in {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.nav-link:hover .icon-box {
-  opacity: 0;
-  animation: icon-box-fall 0.45s ease both;
-}
-.nav-link:hover .icon-box-3 { animation-delay: 0s; }
-.nav-link:hover .icon-box-1 { animation-delay: 0.15s; }
-.nav-link:hover .icon-box-2 { animation-delay: 0.3s; }
-@keyframes icon-box-fall {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+/* underline + icon micro-animations (icon-write/-drop/-box) are now GSAP,
+   driven from components/Header.tsx's NavLink - see lib/gsap.ts */
 
 /* ---- form fields ---- */
 .field {
@@ -386,8 +340,6 @@ textarea.field {
   position: absolute;
   inset: 0;
   background: rgba(38, 70, 83, 0.42);
-  opacity: 0;
-  transition: opacity 0.32s ease;
 }
 .cart-overlay__panel {
   --cart-gap: clamp(0.75rem, 2vw, 1.25rem);
@@ -404,15 +356,8 @@ textarea.field {
   border: 1px solid var(--rule);
   border-radius: 1.5rem;
   box-shadow: 0 30px 70px -20px rgba(38, 70, 83, 0.45);
-  transform: translateX(calc(100% + var(--cart-gap)));
-  transition: transform 0.42s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.cart-overlay[data-open="true"] .cart-overlay__scrim {
-  opacity: 1;
-}
-.cart-overlay[data-open="true"] .cart-overlay__panel {
-  transform: translateX(0);
-}
+/* open/close slide + fade is now GSAP - see components/CartDrawer.tsx */
 
 .search-overlay {
   position: fixed;
@@ -427,8 +372,9 @@ textarea.field {
   position: absolute;
   inset: 0;
   background: rgba(38, 70, 83, 0.42);
+  /* opacity starts at 0 so there's no flash before GSAP takes over on open -
+     see components/Header.tsx */
   opacity: 0;
-  transition: opacity 0.28s ease;
 }
 .search-overlay__panel {
   position: absolute;
@@ -446,7 +392,6 @@ textarea.field {
   box-shadow: 0 30px 70px -20px rgba(38, 70, 83, 0.45);
   opacity: 0;
   transform: translate(-50%, -8px) scale(0.98);
-  transition: opacity 0.24s ease, transform 0.24s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 }
 .search-overlay__results {
@@ -481,36 +426,13 @@ textarea.field {
 .search-overlay__item:hover {
   background: var(--canvas);
 }
-.search-overlay[data-open="true"] .search-overlay__scrim {
-  opacity: 1;
-}
-.search-overlay[data-open="true"] .search-overlay__panel {
-  opacity: 1;
-  transform: translate(-50%, 0) scale(1);
-}
+/* open/close fade + scale is now GSAP - see components/Header.tsx */
 .search-overlay__panel input[type="search"]::-webkit-search-cancel-button {
   display: none;
 }
 
 /* ---- toasts + confirm dialogs ---- */
-@keyframes toast-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-.toast-in {
-  animation: toast-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-@media (prefers-reduced-motion: reduce) {
-  .toast-in {
-    animation: none;
-  }
-}
+/* entrance animation is now GSAP - see components/Toaster.tsx */
 
 dialog.confirm-dialog {
   /* Tailwind's preflight zeroes margin globally, which strips the native
@@ -529,26 +451,7 @@ dialog.confirm-dialog::backdrop {
   background: rgba(23, 23, 26, 0.4);
 }
 
-/* ---- scroll reveal (progressive enhancement) ---- */
-@keyframes rise-in {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .rise {
-      animation: rise-in linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 42%;
-    }
-  }
-}
+/* ---- scroll reveal is now GSAP ScrollTrigger - see components/Reveal.tsx ---- */
 
 /* ---- product card ---- */
 .product-card {
@@ -562,18 +465,8 @@ dialog.confirm-dialog::backdrop {
   z-index: 1; /* outrank the name-link's stretched ::after (z-index: 0) once hover's transform gives this its own stacking context */
   border-radius: 1.5rem;
   overflow: hidden;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
-.product-card__media .ph-photo {
-  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.product-card:hover .product-card__media {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-card);
-}
-.product-card:hover .product-card__media .ph-photo {
-  transform: scale(1.04);
-}
+/* hover lift + photo zoom is now GSAP - see components/ProductGridCard.tsx */
 
 .ph-photo {
   position: relative;
@@ -662,27 +555,11 @@ model-viewer::part(default-progress-bar) {
   margin-bottom: 0;
 }
 
-/* text that swaps on mode change — replays via React key */
-@keyframes auth-fade {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.auth-fade {
-  animation: auth-fade 0.28s ease both;
-}
+/* text that swaps on mode change - now GSAP, see components/AuthAside.tsx */
 @media (prefers-reduced-motion: reduce) {
   .auth-tabs__pill,
   .auth-collapse {
     transition: none;
-  }
-  .auth-fade {
-    animation: none;
   }
 }
 
@@ -708,17 +585,7 @@ model-viewer::part(default-progress-bar) {
   stroke-dasharray: 2 7;
   stroke-linecap: round;
   paint-order: stroke fill;
-  animation: wordmark-march 8s linear infinite;
-}
-@keyframes wordmark-march {
-  to {
-    stroke-dashoffset: -90;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .wordmark__text {
-    animation: none;
-  }
+  /* marching stroke-dashoffset is now GSAP - see components/BrandWordmark.tsx */
 }
 
 /* ---- loading screen ---- */
@@ -732,12 +599,8 @@ model-viewer::part(default-progress-bar) {
   justify-content: center;
   gap: 30px;
   background: var(--paper);
-  transition: opacity 0.55s ease;
 }
-.loader[data-hide="true"] {
-  opacity: 0;
-  pointer-events: none;
-}
+/* fade-out on hide is now GSAP - see components/Loader.tsx */
 
 .loader-video-source {
   position: absolute;
@@ -757,16 +620,7 @@ model-viewer::part(default-progress-bar) {
   letter-spacing: 0.34em;
   text-transform: lowercase;
   color: var(--ink-soft);
-  animation: loader-word 1.6s ease-in-out infinite;
-}
-@keyframes loader-word {
-  0%,
-  100% {
-    opacity: 0.55;
-  }
-  50% {
-    opacity: 1;
-  }
+  /* word pulse is now GSAP - see components/Loader.tsx */
 }
 .loader-bar {
   position: relative;
@@ -780,27 +634,11 @@ model-viewer::part(default-progress-bar) {
   width: 0;
   border-radius: 999px;
   background: linear-gradient(90deg, var(--terracotta-dark), var(--terracotta-light));
-  animation: loader-fill 1.5s linear forwards;
-}
-@keyframes loader-fill {
-  to {
-    width: 100%;
-  }
+  /* fill is now GSAP, synced to VIDEO_DURATION_MS - see components/Loader.tsx */
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .loader-word {
-    animation: none;
-  }
-  .loader-bar-fill {
-    animation: none;
-    width: 100%;
-  }
   .site-header,
-  .cart-overlay__scrim,
-  .cart-overlay__panel,
-  .product-card__media,
-  .product-card__media .ph-photo,
   .btn {
     transition-duration: 0.01ms;
   }

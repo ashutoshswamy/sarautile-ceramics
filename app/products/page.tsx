@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowUpDown, Amphora } from "lucide-react";
 import ProductGridCard from "@/components/ProductGridCard";
 import SortSelect from "@/components/SortSelect";
+import CategoryPill from "@/components/CategoryPill";
 import { SORT_OPTIONS, type SortValue } from "@/lib/sort";
 import { getProducts, getCategories } from "@/lib/queries";
 import type { Metadata } from "next";
@@ -53,28 +54,17 @@ export default async function ProductsPage(props: PageProps<"/products">) {
           <div>
             <span className="kicker">Category</span>
             <div className="flex flex-col gap-2 mt-3.5">
-              <Link
-                href="/products"
-                className={`px-3 py-1.5 rounded-full border text-sm no-underline transition-colors ${
-                  !activeCategory
-                    ? "border-ink bg-ink text-paper"
-                    : "border-rule text-ink hover:border-rule-strong"
-                }`}
-              >
+              <CategoryPill href="/products" active={!activeCategory}>
                 All
-              </Link>
+              </CategoryPill>
               {categories.map((c) => (
-                <Link
+                <CategoryPill
                   key={c.slug}
                   href={`/products?category=${c.slug}`}
-                  className={`px-3 py-1.5 rounded-full border text-sm no-underline transition-colors ${
-                    activeCategory?.slug === c.slug
-                      ? "border-ink bg-ink text-paper"
-                      : "border-rule text-ink hover:border-rule-strong"
-                  }`}
+                  active={activeCategory?.slug === c.slug}
                 >
                   {c.name}
-                </Link>
+                </CategoryPill>
               ))}
             </div>
           </div>

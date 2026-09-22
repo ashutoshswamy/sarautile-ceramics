@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import { gsap, useGSAP } from "@/lib/gsap";
 
 // public/loading-video-final.mp4 is 5s - the fallback timer is a safety net
 // in case autoplay is blocked or the video fails to load, not the primary trigger.
@@ -36,6 +37,9 @@ export default function Loader() {
   const [gone, setGone] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const wordRef = useRef<HTMLSpanElement>(null);
+  const barFillRef = useRef<HTMLDivElement>(null);
 
   const isHome = pathname === "/";
 
@@ -44,12 +48,6 @@ export default function Loader() {
     const t = setTimeout(() => setHide(true), FALLBACK_MS);
     return () => clearTimeout(t);
   }, [isHome]);
-
-  useEffect(() => {
-    if (!hide) return;
-    const t = setTimeout(() => setGone(true), 600); // match CSS fade-out
-    return () => clearTimeout(t);
-  }, [hide]);
 
   useEffect(() => {
     if (!isHome || gone) return;
@@ -72,12 +70,51 @@ export default function Loader() {
     return () => cancelAnimationFrame(raf);
   }, [isHome, gone]);
 
+  // word pulse + bar fill, was CSS `loader-word`/`loader-fill` keyframes
+  useGSAP(() => {
+    if (!isHome || gone || !wordRef.current || !barFillRef.current) return;
+    const mm = gsap.matchMedia();
+    mm.add("(prefers-reduced-motion: no-preference)", () => {
+      gsap.set(wordRef.current, { opacity: 0.55 });
+      gsap.to(wordRef.current, {
+        opacity: 1,
+        duration: 0.8,
+        ease: "sine.inOut",
+        repeat: -1,
+        yoyo: true,
+      });
+      gsap.set(barFillRef.current, { width: "0%" });
+      gsap.to(barFillRef.current, {
+        width: "100%",
+        duration: VIDEO_DURATION_MS / 1000,
+        ease: "none",
+      });
+    });
+    mm.add("(prefers-reduced-motion: reduce)", () => {
+      gsap.set(wordRef.current, { opacity: 1 });
+      gsap.set(barFillRef.current, { width: "100%" });
+    });
+    return () => mm.revert();
+  }, [isHome, gone]);
+
+  // fade-out on hide, was CSS `.loader[data-hide="true"] { opacity: 0 }`
+  useGSAP(() => {
+    if (!hide || !wrapRef.current) return;
+    gsap.to(wrapRef.current, {
+      opacity: 0,
+      duration: 0.55,
+      ease: "power1.out",
+      onComplete: () => setGone(true),
+    });
+  }, [hide]);
+
   if (!isHome || gone) return null;
 
   return (
     <div
+      ref={wrapRef}
       className="loader"
-      data-hide={hide}
+      style={{ transition: "none", pointerEvents: hide ? "none" : undefined }}
       role="status"
       aria-label="Loading"
     >
@@ -91,9 +128,11 @@ export default function Loader() {
         onEnded={() => setHide(true)}
       />
       <canvas ref={canvasRef} className="loader-video" aria-hidden="true" />
-      <span className="loader-word">firing</span>
+      <span ref={wordRef} className="loader-word" style={{ animation: "none" }}>
+        firing
+      </span>
       <div className="loader-bar" aria-hidden="true">
-        <div className="loader-bar-fill" style={{ animationDuration: `${VIDEO_DURATION_MS}ms` }} />
+        <div ref={barFillRef} className="loader-bar-fill" style={{ animation: "none" }} />
       </div>
     </div>
   );

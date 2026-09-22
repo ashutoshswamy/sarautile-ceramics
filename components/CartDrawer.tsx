@@ -1,38 +1,49 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { X, Trash2, ArrowRight, ShoppingBag } from "lucide-react";
 import PlaceholderPhoto from "@/components/PlaceholderPhoto";
 import { useCart } from "@/components/CartContext";
 import { useProducts } from "@/components/ProductsContext";
 import { resolveCart } from "@/lib/cart";
+import { gsap, useGSAP, useHoverTween } from "@/lib/gsap";
 
 export default function CartDrawer() {
   const { open, setOpen, lines, setQty, remove } = useCart();
   const { findProduct } = useProducts();
   const [mounted, setMounted] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const [prevOpen, setPrevOpen] = useState(open);
+  const scrimRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
 
   // Keep the drawer mounted through its slide-out so the exit animates.
-  useEffect(() => {
-    if (open) {
-      setMounted(true);
-      // Double rAF: let the browser paint the closed state first, otherwise the
-      // open transition has no "from" frame and the panel just snaps in.
-      let inner = 0;
-      const outer = requestAnimationFrame(() => {
-        inner = requestAnimationFrame(() => setVisible(true));
-      });
-      return () => {
-        cancelAnimationFrame(outer);
-        cancelAnimationFrame(inner);
-      };
-    }
-    setVisible(false);
-    const id = setTimeout(() => setMounted(false), 450);
-    return () => clearTimeout(id);
-  }, [open]);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) setMounted(true);
+  }
+
+  useGSAP(
+    () => {
+      if (!mounted || !scrimRef.current || !panelRef.current) return;
+      if (open) {
+        gsap.fromTo(scrimRef.current, { opacity: 0 }, { opacity: 1, duration: 0.32, ease: "power1.out" });
+        gsap.fromTo(panelRef.current, { xPercent: 100 }, { xPercent: 0, duration: 0.42, ease: "power2.out" });
+      } else {
+        gsap.to(scrimRef.current, { opacity: 0, duration: 0.32, ease: "power1.in" });
+        gsap.to(panelRef.current, {
+          xPercent: 100,
+          duration: 0.42,
+          ease: "power2.in",
+          onComplete: () => setMounted(false),
+        });
+      }
+    },
+    { dependencies: [open, mounted] }
+  );
+
+  useHoverTween(closeRef, { color: "var(--ink)" }, { color: "var(--ink-soft)" });
 
   // Lock body scroll while open.
   useEffect(() => {
@@ -57,10 +68,17 @@ export default function CartDrawer() {
   const { items, subtotal, count } = resolveCart(lines, findProduct);
 
   return (
-    <div className="cart-overlay" data-open={visible}>
-      <div className="cart-overlay__scrim" onClick={() => setOpen(false)} />
+    <div className="cart-overlay" style={{ pointerEvents: open ? "auto" : "none" }}>
       <div
+        ref={scrimRef}
+        className="cart-overlay__scrim"
+        style={{ transition: "none" }}
+        onClick={() => setOpen(false)}
+      />
+      <div
+        ref={panelRef}
         className="cart-overlay__panel"
+        style={{ transition: "none" }}
         role="dialog"
         aria-modal="true"
         aria-label="Your cart"
@@ -71,8 +89,9 @@ export default function CartDrawer() {
             {count} {count === 1 ? "piece" : "pieces"}
           </span>
           <button
+            ref={closeRef}
             onClick={() => setOpen(false)}
-            className="ml-auto -mr-1 flex items-center text-ink-soft cursor-pointer transition-colors hover:text-ink"
+            className="ml-auto -mr-1 flex items-center text-ink-soft cursor-pointer"
             aria-label="Close cart"
           >
             <X size={20} strokeWidth={1.6} />
@@ -112,29 +131,29 @@ export default function CartDrawer() {
                     </div>
                     <div className="flex items-center gap-3 mt-2">
                       <span className="inline-flex items-center gap-3 border border-rule-strong rounded-full px-3 py-1 text-sm">
-                        <button
+                        <HoverColorButton
                           onClick={() => setQty(item.slug, item.qty - 1)}
-                          className="cursor-pointer text-ink-soft leading-none hover:text-ink"
+                          className="cursor-pointer text-ink-soft leading-none"
                           aria-label="Decrease quantity"
                         >
                           –
-                        </button>
+                        </HoverColorButton>
                         {item.qty}
-                        <button
+                        <HoverColorButton
                           onClick={() => setQty(item.slug, item.qty + 1)}
-                          className="cursor-pointer text-ink-soft leading-none hover:text-ink"
+                          className="cursor-pointer text-ink-soft leading-none"
                           aria-label="Increase quantity"
                         >
                           +
-                        </button>
+                        </HoverColorButton>
                       </span>
-                      <button
+                      <HoverColorButton
                         onClick={() => remove(item.slug)}
-                        className="inline-flex items-center gap-1 text-xs text-ink-faint cursor-pointer transition-colors hover:text-ink"
+                        className="inline-flex items-center gap-1 text-xs text-ink-faint cursor-pointer"
                       >
                         <Trash2 size={12} strokeWidth={1.8} aria-hidden />
                         Remove
-                      </button>
+                      </HoverColorButton>
                     </div>
                   </div>
                 </div>
@@ -162,5 +181,19 @@ export default function CartDrawer() {
         )}
       </div>
     </div>
+  );
+}
+
+function HoverColorButton({
+  children,
+  className,
+  ...rest
+}: React.ComponentPropsWithoutRef<"button">) {
+  const ref = useRef<HTMLButtonElement>(null);
+  useHoverTween(ref, { color: "var(--ink)" });
+  return (
+    <button ref={ref} className={className} {...rest}>
+      {children}
+    </button>
   );
 }

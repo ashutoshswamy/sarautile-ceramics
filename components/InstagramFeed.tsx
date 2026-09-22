@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Camera } from "lucide-react";
 import type { InstagramPost } from "@/lib/queries";
+import Reveal from "@/components/Reveal";
+import { useHoverTween } from "@/lib/gsap";
 
 declare global {
   interface Window {
@@ -16,6 +18,9 @@ declare global {
 // soon as they're added in /admin/instagram; Instagram doesn't offer a way
 // to detect them automatically without a Meta developer app + access token.
 export default function InstagramFeed({ posts }: { posts: InstagramPost[] }) {
+  const followRef = useRef<HTMLAnchorElement>(null);
+  useHoverTween(followRef, { borderColor: "var(--ink)" });
+
   useEffect(() => {
     if (posts.length === 0) return;
 
@@ -36,15 +41,16 @@ export default function InstagramFeed({ posts }: { posts: InstagramPost[] }) {
   if (posts.length === 0) return null;
 
   return (
-    <section className="container-x section-tight rise">
+    <Reveal as="section" className="container-x section-tight">
       <div className="flex items-center gap-3 mb-8">
         <h2 className="display-2">From the workshop</h2>
         <a
+          ref={followRef}
           href="https://www.instagram.com"
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Follow us on Instagram"
-          className="ml-auto shrink-0 grid place-items-center w-9 h-9 rounded-full border border-rule-strong text-ink transition-colors hover:border-ink"
+          className="ml-auto shrink-0 grid place-items-center w-9 h-9 rounded-full border border-rule-strong text-ink"
         >
           <Camera size={16} strokeWidth={1.6} />
         </a>
@@ -62,6 +68,6 @@ export default function InstagramFeed({ posts }: { posts: InstagramPost[] }) {
           </div>
         ))}
       </div>
-    </section>
+    </Reveal>
   );
 }

@@ -1,5 +1,6 @@
 import PlaceholderPhoto from "@/components/PlaceholderPhoto";
 import { timeline } from "@/lib/data";
+import Reveal from "@/components/Reveal";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Our story - Sara Utile Ceramics" };
@@ -22,7 +23,7 @@ export default function StoryPage() {
         </p>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-[1.2fr_.8fr] mt-12 rise">
+      <Reveal as="div" className="grid gap-5 md:grid-cols-[1.2fr_.8fr] mt-12">
         <PlaceholderPhoto
           label="the workshop, wide"
           rounded="rounded-[28px]"
@@ -33,9 +34,9 @@ export default function StoryPage() {
           rounded="rounded-[28px]"
           className="aspect-[4/5] p-3.5"
         />
-      </div>
+      </Reveal>
 
-      <div className="mt-16 max-w-[760px] rise">
+      <Reveal as="div" className="mt-16 max-w-[760px]">
         <span className="kicker">The years</span>
         <div className="flex flex-col border-t border-rule mt-4">
           {timeline.map((t) => (
@@ -55,7 +56,7 @@ export default function StoryPage() {
             </div>
           ))}
         </div>
-      </div>
+      </Reveal>
     </div>
   );
 }

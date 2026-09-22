@@ -6,6 +6,8 @@ import ProductRow from "@/components/ProductRow";
 import ShopByCategory from "@/components/ShopByCategory";
 import ShopByCollection from "@/components/ShopByCollection";
 import InstagramFeed from "@/components/InstagramFeed";
+import Reveal from "@/components/Reveal";
+import ValueCard from "@/components/ValueCard";
 import { wholesaleFacts } from "@/lib/data";
 import {
   getCollection,
@@ -66,10 +68,7 @@ export default async function Home() {
           </div>
           <div className="grid gap-6 md:grid-cols-3">
             {VALUES.map((value, i) => (
-              <div
-                key={value.title}
-                className="rise relative bg-paper border border-rule rounded-2xl p-7 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_-24px_rgba(38,70,83,0.35)]"
-              >
+              <ValueCard key={value.title}>
                 <span className="absolute top-6 right-7 text-[2.5rem] font-semibold leading-none text-ink/[0.05] select-none">
                   0{i + 1}
                 </span>
@@ -78,14 +77,14 @@ export default async function Home() {
                 </div>
                 <h3 className="display-3 mt-5">{value.title}</h3>
                 <p className="lede text-[0.95rem] mt-2.5">{value.body}</p>
-              </div>
+              </ValueCard>
             ))}
           </div>
         </div>
       </section>
 
       <section className="container-x section-tight">
-        <div className="bg-[var(--ink)] text-paper rounded-3xl p-8 sm:p-12 grid md:grid-cols-[1.3fr_1fr] gap-8 items-center rise">
+        <Reveal className="bg-[var(--ink)] text-paper rounded-3xl p-8 sm:p-12 grid md:grid-cols-[1.3fr_1fr] gap-8 items-center">
           <div>
             <span className="kicker text-terracotta-light">Wholesale</span>
             <h2 className="display-2 mt-2 text-paper">
@@ -103,11 +102,11 @@ export default async function Home() {
           >
             Wholesale terms <ArrowRight size={16} strokeWidth={1.7} aria-hidden />
           </Link>
-        </div>
+        </Reveal>
       </section>
 
-      <section className="container-x section-tight border-t border-rule rise">
-        <div className="max-w-md">
+      <section className="container-x section-tight border-t border-rule">
+        <Reveal className="max-w-md">
           <span className="kicker">One firing a fortnight</span>
           <h2 className="display-2 mt-2">Get a text when the kiln opens</h2>
           <p className="lede text-[0.95rem] mt-2.5 mb-6">
@@ -115,7 +114,7 @@ export default async function Home() {
             is ready to buy, before it sells out.
           </p>
           <KilnNotify />
-        </div>
+        </Reveal>
       </section>
 
       <InstagramFeed posts={instagramPosts} />

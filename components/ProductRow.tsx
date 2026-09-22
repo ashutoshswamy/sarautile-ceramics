@@ -4,7 +4,36 @@ import { useRef } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
+import Reveal from "@/components/Reveal";
+import { useHoverTween } from "@/lib/gsap";
 import type { Product } from "@/lib/data";
+
+function NavButton({
+  dir,
+  label,
+  onClick,
+}: {
+  dir: "left" | "right";
+  label: string;
+  onClick: () => void;
+}) {
+  const ref = useRef<HTMLButtonElement>(null);
+  useHoverTween(ref, { y: -2 });
+  return (
+    <button
+      ref={ref}
+      onClick={onClick}
+      aria-label={label}
+      className="grid place-items-center w-9 h-9 rounded-full bg-terracotta text-paper cursor-pointer"
+    >
+      {dir === "left" ? (
+        <ChevronLeft size={16} strokeWidth={2} />
+      ) : (
+        <ChevronRight size={16} strokeWidth={2} />
+      )}
+    </button>
+  );
+}
 
 export default function ProductRow({
   title,
@@ -24,7 +53,7 @@ export default function ProductRow({
   }
 
   return (
-    <section className="container-x section-tight rise">
+    <Reveal as="section" className="container-x section-tight">
       <div className="flex items-center gap-4 mb-8">
         <h2 className="display-2">{title}</h2>
         <Link href="/products" className="btn btn-primary ml-auto shrink-0">
@@ -42,21 +71,9 @@ export default function ProductRow({
       </div>
 
       <div className="flex gap-3 mt-6">
-        <button
-          onClick={() => scrollBy(-1)}
-          aria-label={`Scroll ${title} left`}
-          className="grid place-items-center w-9 h-9 rounded-full bg-terracotta text-paper cursor-pointer transition-transform hover:-translate-y-0.5"
-        >
-          <ChevronLeft size={16} strokeWidth={2} />
-        </button>
-        <button
-          onClick={() => scrollBy(1)}
-          aria-label={`Scroll ${title} right`}
-          className="grid place-items-center w-9 h-9 rounded-full bg-terracotta text-paper cursor-pointer transition-transform hover:-translate-y-0.5"
-        >
-          <ChevronRight size={16} strokeWidth={2} />
-        </button>
+        <NavButton dir="left" label={`Scroll ${title} left`} onClick={() => scrollBy(-1)} />
+        <NavButton dir="right" label={`Scroll ${title} right`} onClick={() => scrollBy(1)} />
       </div>
-    </section>
+    </Reveal>
   );
 }

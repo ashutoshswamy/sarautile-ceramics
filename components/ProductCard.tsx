@@ -1,8 +1,10 @@
 "use client";
 
+import { useRef } from "react";
 import Link from "next/link";
 import PlaceholderPhoto from "@/components/PlaceholderPhoto";
 import { useCart } from "@/components/CartContext";
+import { useHoverTween } from "@/lib/gsap";
 import type { Product } from "@/lib/data";
 
 export default function ProductCard({
@@ -13,6 +15,8 @@ export default function ProductCard({
   badge: string;
 }) {
   const { add, setOpen } = useCart();
+  const nameRef = useRef<HTMLAnchorElement>(null);
+  useHoverTween(nameRef, { color: "var(--terracotta-hover)" });
 
   function handleAdd() {
     add(product.slug);
@@ -36,8 +40,9 @@ export default function ProductCard({
       </div>
       <div className="bg-paper-tint border border-t-0 border-rule px-4 py-4 flex flex-col gap-3">
         <Link
+          ref={nameRef}
           href={`/products/${product.slug}`}
-          className="text-sm text-ink no-underline hover:text-terracotta-hover"
+          className="text-sm text-ink no-underline"
         >
           {product.name}
         </Link>

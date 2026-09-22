@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { Heart, ShoppingBag, X } from "lucide-react";
@@ -7,6 +8,59 @@ import PlaceholderPhoto from "@/components/PlaceholderPhoto";
 import { useWishlist } from "@/components/WishlistContext";
 import { useCart } from "@/components/CartContext";
 import { useProducts } from "@/components/ProductsContext";
+import { useHoverTween } from "@/lib/gsap";
+
+function WishlistCard({
+  product,
+  onRemove,
+  onAdd,
+}: {
+  product: { slug: string; name: string; price: number; photoLabel: string; imageUrl: string | null };
+  onRemove: () => void;
+  onAdd: () => void;
+}) {
+  const removeRef = useRef<HTMLButtonElement>(null);
+  const nameRef = useRef<HTMLAnchorElement>(null);
+  useHoverTween(removeRef, { color: "var(--terracotta)" });
+  useHoverTween(nameRef, { color: "var(--terracotta-hover)" });
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="relative product-card__media rounded-2xl">
+        <Link href={`/products/${product.slug}`}>
+          <PlaceholderPhoto
+            label={product.photoLabel}
+            src={product.imageUrl}
+            rounded="rounded-2xl"
+            className="aspect-square"
+          />
+        </Link>
+        <button
+          ref={removeRef}
+          onClick={onRemove}
+          aria-label={`Remove ${product.name} from wishlist`}
+          className="absolute top-2.5 right-2.5 grid place-items-center w-9 h-9 rounded-full border border-rule bg-paper/85 backdrop-blur-sm text-ink-soft cursor-pointer"
+        >
+          <X size={16} strokeWidth={1.8} />
+        </button>
+      </div>
+      <div className="flex items-baseline gap-2">
+        <Link
+          ref={nameRef}
+          href={`/products/${product.slug}`}
+          className="font-medium text-ink no-underline"
+        >
+          {product.name}
+        </Link>
+        <span className="ml-auto font-medium">₹{product.price}</span>
+      </div>
+      <button onClick={onAdd} className="btn btn-ghost mt-1 h-10 text-[0.8rem]">
+        <ShoppingBag size={15} strokeWidth={1.8} />
+        Add to cart
+      </button>
+    </div>
+  );
+}
 
 export default function WishlistPage() {
   const { user } = useUser();
@@ -54,48 +108,17 @@ export default function WishlistPage() {
         </div>
       ) : (
         <div className="grid gap-x-6 gap-y-9 sm:grid-cols-2 lg:grid-cols-3 mt-8">
-          {products.map((product) => {
-            return (
-              <div key={product.slug} className="flex flex-col gap-2">
-                <div className="relative product-card__media rounded-2xl">
-                  <Link href={`/products/${product.slug}`}>
-                    <PlaceholderPhoto
-                      label={product.photoLabel}
-                      src={product.imageUrl}
-                      rounded="rounded-2xl"
-                      className="aspect-square"
-                    />
-                  </Link>
-                  <button
-                    onClick={() => remove(product.slug)}
-                    aria-label={`Remove ${product.name} from wishlist`}
-                    className="absolute top-2.5 right-2.5 grid place-items-center w-9 h-9 rounded-full border border-rule bg-paper/85 backdrop-blur-sm text-ink-soft cursor-pointer transition-colors hover:text-terracotta"
-                  >
-                    <X size={16} strokeWidth={1.8} />
-                  </button>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <Link
-                    href={`/products/${product.slug}`}
-                    className="font-medium text-ink no-underline hover:text-terracotta-hover"
-                  >
-                    {product.name}
-                  </Link>
-                  <span className="ml-auto font-medium">₹{product.price}</span>
-                </div>
-                <button
-                  onClick={() => {
-                    add(product.slug, 1);
-                    setOpen(true);
-                  }}
-                  className="btn btn-ghost mt-1 h-10 text-[0.8rem]"
-                >
-                  <ShoppingBag size={15} strokeWidth={1.8} />
-                  Add to cart
-                </button>
-              </div>
-            );
-          })}
+          {products.map((product) => (
+            <WishlistCard
+              key={product.slug}
+              product={product}
+              onRemove={() => remove(product.slug)}
+              onAdd={() => {
+                add(product.slug, 1);
+                setOpen(true);
+              }}
+            />
+          ))}
         </div>
       )}
     </div>

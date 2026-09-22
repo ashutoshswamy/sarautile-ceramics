@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { DM_Sans, Space_Grotesk } from "next/font/google";
+import { DM_Sans } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { WishlistProvider } from "@/components/WishlistContext";
@@ -21,16 +21,6 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
-// Used only for the dotted footer wordmark (components/BrandWordmark.tsx) -
-// DM Sans's bold 'e' shows a self-intersecting outline when stroked instead
-// of filled, Space Grotesk doesn't.
-const spaceGrotesk = Space_Grotesk({
-  weight: ["700"],
-  subsets: ["latin"],
-  variable: "--font-space-grotesk",
-  display: "swap",
-});
-
 export const metadata: Metadata = {
   title: "Sara Utile Ceramics - ceramics made slowly, on a wheel, by two people",
   description:
@@ -42,14 +32,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <ClerkProvider
       appearance={{
         variables: {
-          colorPrimary: "#ff4f1f",
+          colorPrimary: "#f25c54",
           colorBackground: "#ffffff",
-          colorForeground: "#17171a",
+          colorForeground: "#33243a",
           borderRadius: "0.75rem",
         },
       }}
     >
-      <html lang="en" className={`${dmSans.variable} ${spaceGrotesk.variable} font-sans`}>
+      <html lang="en" className={`${dmSans.variable} font-sans`}>
         <body className="min-h-screen flex flex-col bg-paper text-ink antialiased">
           <ProductsProvider>
             <WishlistProvider>

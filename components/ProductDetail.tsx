@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Layers, Droplets, Scale, ShoppingBag, Heart, Check } from "lucide-react";
 import PlaceholderPhoto from "@/components/PlaceholderPhoto";
 import { useCart } from "@/components/CartContext";
 import { useWishlist } from "@/components/WishlistContext";
+import { gsap, useGSAP, useHoverTween } from "@/lib/gsap";
 import type { Product } from "@/lib/data";
 
 const THUMBS = ["handle detail", "inside the rim", "base + stamp", "in a hand"];
@@ -23,6 +24,28 @@ export default function ProductDetail({ product }: { product: Product }) {
   const { add, setOpen } = useCart();
   const { has, toggle } = useWishlist();
   const wished = has(product.slug);
+
+  const wishBtnRef = useRef<HTMLButtonElement>(null);
+  const wishHeartRef = useRef<SVGSVGElement>(null);
+  const wishMounted = useRef(false);
+
+  useHoverTween(wishBtnRef, { color: "var(--terracotta)", borderColor: "var(--ink)" });
+
+  useGSAP(
+    () => {
+      if (!wishMounted.current) {
+        wishMounted.current = true;
+        return;
+      }
+      if (!wishHeartRef.current) return;
+      gsap.fromTo(
+        wishHeartRef.current,
+        { scale: 1.35 },
+        { scale: 1, duration: 0.35, ease: "back.out(3)" }
+      );
+    },
+    { dependencies: [wished] }
+  );
 
   function addToCart() {
     add(product.slug, qty);
@@ -59,13 +82,15 @@ export default function ProductDetail({ product }: { product: Product }) {
         <div className="flex items-start gap-3">
           <h1 className="display-2">{product.name}</h1>
           <button
+            ref={wishBtnRef}
             type="button"
             onClick={() => toggle(product.slug)}
             aria-pressed={wished}
             aria-label={wished ? "Remove from wishlist" : "Save to wishlist"}
-            className="ml-auto mt-1 grid place-items-center w-10 h-10 flex-none rounded-full border border-rule-strong text-ink-soft cursor-pointer transition-colors hover:text-terracotta hover:border-ink"
+            className="ml-auto mt-1 grid place-items-center w-10 h-10 flex-none rounded-full border border-rule-strong text-ink-soft cursor-pointer"
           >
             <Heart
+              ref={wishHeartRef}
               size={17}
               strokeWidth={1.7}
               className={wished ? "fill-terracotta text-terracotta" : ""}

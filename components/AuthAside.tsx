@@ -1,8 +1,10 @@
 "use client";
 
+import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { gsap, useGSAP } from "@/lib/gsap";
 
 const COPY = {
   in: {
@@ -24,6 +26,23 @@ export default function AuthAside() {
   const signup = pathname.startsWith("/signup");
   const c = signup ? COPY.up : COPY.in;
   const modeKey = signup ? "up" : "in";
+  const fadeRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(
+    () => {
+      if (!fadeRef.current) return;
+      const mm = gsap.matchMedia();
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        gsap.fromTo(
+          fadeRef.current,
+          { opacity: 0, y: 4 },
+          { opacity: 1, y: 0, duration: 0.28, ease: "power1.out" }
+        );
+      });
+      return () => mm.revert();
+    },
+    { dependencies: [modeKey] }
+  );
 
   return (
     <aside className="relative hidden lg:flex flex-col justify-between overflow-hidden border-r border-rule bg-canvas p-12 xl:p-16">
@@ -38,10 +57,10 @@ export default function AuthAside() {
 
       <div className="relative z-10 max-w-[24rem]">
         <Link href="/" className="inline-block shrink-0">
-          <Image src="/logo-nobg.png" alt="" width={160} height={64} className="h-14 w-auto xl:h-16" />
+          <Image src="/logo-nobg.png" alt="" width={2172} height={724} className="h-14 w-auto xl:h-16" />
         </Link>
 
-        <div key={modeKey} className="auth-fade mt-10">
+        <div key={modeKey} ref={fadeRef} className="mt-10">
           <span className="kicker">{c.kicker}</span>
           <p className="display-1 mt-4 text-[clamp(1.9rem,2.6vw,2.7rem)]">
             {c.asideTitle}

@@ -1,5 +1,6 @@
 import { Check, TriangleAlert, Info, Wrench, LifeBuoy } from "lucide-react";
 import { care } from "@/lib/data";
+import Reveal from "@/components/Reveal";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Care - Sara Utile Ceramics" };
@@ -25,7 +26,7 @@ export default function CarePage() {
         {care.map((c) => {
           const VerdictIcon = VERDICT_ICON[c.verdict] ?? Info;
           return (
-          <div key={c.q} className="card p-5.5 rise">
+          <Reveal key={c.q} as="div" className="card p-5.5">
             <div className="flex items-center gap-2.5">
               <span
                 className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-0.5 rounded-full"
@@ -39,7 +40,7 @@ export default function CarePage() {
             <p className="text-sm leading-relaxed text-ink-soft mt-2.5">
               {c.a}
             </p>
-          </div>
+          </Reveal>
           );
         })}
       </div>

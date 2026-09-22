@@ -1,11 +1,41 @@
+"use client";
+
+import { useRef } from "react";
 import Link from "next/link";
 import PlaceholderPhoto from "@/components/PlaceholderPhoto";
 import WishlistButton from "@/components/WishlistButton";
+import { gsap, useGSAP } from "@/lib/gsap";
 import type { Product } from "@/lib/data";
 
 export default function ProductGridCard({ product }: { product: Product }) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const nameRef = useRef<HTMLAnchorElement>(null);
+
+  useGSAP(() => {
+    const card = cardRef.current;
+    const name = nameRef.current;
+    if (!card || !name) return;
+    const media = card.querySelector<HTMLElement>(".product-card__media");
+    const photo = card.querySelector<HTMLElement>(".ph-photo");
+    if (!media || !photo) return;
+
+    const tl = gsap.timeline({ paused: true });
+    tl.to(media, { y: -4, boxShadow: "var(--shadow-card)", duration: 0.25, ease: "power2.out" }, 0);
+    tl.to(photo, { scale: 1.04, duration: 0.4, ease: "power2.out" }, 0);
+    tl.to(name, { color: "var(--terracotta-hover)", duration: 0.15, ease: "power2.out" }, 0);
+
+    const enter = () => tl.play();
+    const leave = () => tl.reverse();
+    card.addEventListener("mouseenter", enter);
+    card.addEventListener("mouseleave", leave);
+    return () => {
+      card.removeEventListener("mouseenter", enter);
+      card.removeEventListener("mouseleave", leave);
+    };
+  }, []);
+
   return (
-    <div className="product-card group relative">
+    <div ref={cardRef} className="product-card relative">
       <div className="product-card__media relative">
         <PlaceholderPhoto
           label={product.photoLabel}
@@ -17,8 +47,9 @@ export default function ProductGridCard({ product }: { product: Product }) {
       </div>
       <div className="flex flex-col gap-1">
         <Link
+          ref={nameRef}
           href={`/products/${product.slug}`}
-          className="font-medium text-ink no-underline transition-colors group-hover:text-terracotta-hover after:absolute after:inset-0 after:z-0"
+          className="font-medium text-ink no-underline after:absolute after:inset-0 after:z-0"
         >
           {product.name}
         </Link>
