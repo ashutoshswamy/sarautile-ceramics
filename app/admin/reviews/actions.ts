@@ -27,3 +27,22 @@ export async function deleteReview(id: number, productSlug: string, returnPath: 
   revalidatePath(`/products/${productSlug}`);
   redirectWithToast(returnPath, "Review deleted.");
 }
+
+export async function replyToReview(
+  id: number,
+  productSlug: string,
+  returnPath: string,
+  formData: FormData
+) {
+  await requireAdmin();
+  const reply = String(formData.get("reply") ?? "").trim();
+  const { error } = await getSupabaseAdmin()
+    .from("reviews")
+    .update({ admin_reply: reply || null, admin_reply_at: reply ? new Date().toISOString() : null })
+    .eq("id", id);
+  if (error) redirectWithToast(returnPath, error.message, "error");
+
+  revalidatePath("/admin/reviews");
+  revalidatePath(`/products/${productSlug}`);
+  redirectWithToast(returnPath, reply ? "Reply posted." : "Reply removed.");
+}

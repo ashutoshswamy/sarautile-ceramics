@@ -201,6 +201,8 @@ export type Review = {
   rating: number;
   comment: string;
   customerName: string;
+  avatarUrl: string | null;
+  adminReply: string | null;
 };
 
 /** Approved reviews for one product, newest first. */
@@ -208,7 +210,7 @@ export const getReviews = unstable_cache(
   async (productSlug: string): Promise<Review[]> => {
     const { data, error } = await getSupabase()
       .from("reviews")
-      .select("id, rating, comment, customer_name")
+      .select("id, rating, comment, customer_name, avatar_url, admin_reply")
       .eq("product_slug", productSlug)
       .eq("approved", true)
       .order("created_at", { ascending: false });
@@ -218,6 +220,8 @@ export const getReviews = unstable_cache(
       rating: r.rating,
       comment: r.comment,
       customerName: r.customer_name,
+      avatarUrl: r.avatar_url,
+      adminReply: r.admin_reply,
     }));
   },
   ["reviews"],

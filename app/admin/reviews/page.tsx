@@ -1,7 +1,8 @@
 import { Star, Trash2, Check } from "lucide-react";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import ConfirmSubmitButton from "@/components/admin/ConfirmSubmitButton";
-import { approveReview, deleteReview } from "./actions";
+import SubmitButton from "@/components/admin/SubmitButton";
+import { approveReview, deleteReview, replyToReview } from "./actions";
 
 type ReviewRow = {
   id: number;
@@ -10,6 +11,7 @@ type ReviewRow = {
   rating: number;
   comment: string;
   approved: boolean;
+  admin_reply: string | null;
   created_at: string;
 };
 
@@ -34,7 +36,7 @@ export default async function AdminReviewsPage(props: PageProps<"/admin/reviews"
 
   const { data } = await getSupabaseAdmin()
     .from("reviews")
-    .select("id, product_slug, customer_name, rating, comment, approved, created_at")
+    .select("id, product_slug, customer_name, rating, comment, approved, admin_reply, created_at")
     .order("created_at", { ascending: false })
     .returns<ReviewRow[]>();
 
@@ -102,6 +104,19 @@ export default async function AdminReviewsPage(props: PageProps<"/admin/reviews"
                 </ConfirmSubmitButton>
               </form>
             </div>
+            <form
+              action={replyToReview.bind(null, r.id, r.product_slug, returnPath)}
+              className="flex gap-2 mt-3 max-w-[420px]"
+            >
+              <input
+                type="text"
+                name="reply"
+                defaultValue={r.admin_reply ?? ""}
+                placeholder="Reply as Sarautile Ceramics…"
+                className="field text-sm py-1.5"
+              />
+              <SubmitButton>{r.admin_reply ? "Update" : "Reply"}</SubmitButton>
+            </form>
           </div>
         ))}
         {reviews.length === 0 && (

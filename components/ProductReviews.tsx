@@ -1,10 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
-import { Star } from "lucide-react";
+import { Star, Trash2 } from "lucide-react";
 import { useAuthedSupabase } from "@/lib/useAuthedSupabase";
 import type { Review } from "@/lib/queries";
+
+function Avatar({ url, name }: { url: string | null; name: string }) {
+  if (url) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- reviewer avatars come from Clerk's CDN, not next/image's configured remotePatterns
+      <img src={url} alt="" className="size-6 rounded-full object-cover" />
+    );
+  }
+  return (
+    <span className="size-6 rounded-full bg-sand text-ink-faint text-[0.65rem] font-medium inline-flex items-center justify-center">
+      {name.charAt(0).toUpperCase()}
+    </span>
+  );
+}
 
 function Stars({ rating, onPick }: { rating: number; onPick?: (n: number) => void }) {
   return (
@@ -29,6 +43,14 @@ function Stars({ rating, onPick }: { rating: number; onPick?: (n: number) => voi
   );
 }
 
+type MyReview = {
+  id: number;
+  rating: number;
+  comment: string;
+  approved: boolean;
+  adminReply: string | null;
+};
+
 export default function ProductReviews({
   productSlug,
   initialReviews,
@@ -36,40 +58,89 @@ export default function ProductReviews({
   productSlug: string;
   initialReviews: Review[];
 }) {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const supabase = useAuthedSupabase();
   const reviews = initialReviews;
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
   const [error, setError] = useState("");
+  const [mine, setMine] = useState<MyReview | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const avg = reviews.length
     ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
     : 0;
+
+  useEffect(() => {
+    if (!isLoaded || !user) return;
+    let cancelled = false;
+    supabase
+      .from("reviews")
+      .select("id, rating, comment, approved, admin_reply")
+      .eq("product_slug", productSlug)
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        setMine({
+          id: data.id,
+          rating: data.rating,
+          comment: data.comment,
+          approved: data.approved,
+          adminReply: data.admin_reply,
+        });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoaded, user, supabase, productSlug]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!user || rating < 1 || !comment.trim()) return;
     setSubmitting(true);
     setError("");
-    const { error } = await supabase.from("reviews").insert({
-      product_slug: productSlug,
-      user_id: user.id,
-      customer_name: user.firstName ?? user.fullName ?? "A customer",
-      rating,
-      comment: comment.trim(),
-    });
+    const { data, error } = await supabase
+      .from("reviews")
+      .insert({
+        product_slug: productSlug,
+        user_id: user.id,
+        customer_name: user.firstName ?? user.fullName ?? "A customer",
+        avatar_url: user.imageUrl ?? null,
+        rating,
+        comment: comment.trim(),
+      })
+      .select("id, rating, comment, approved, admin_reply")
+      .single();
     setSubmitting(false);
     if (error) {
       console.error("review submit failed:", error);
       setError("Couldn't submit that - try again in a moment.");
       return;
     }
-    setDone(true);
+    setMine({
+      id: data.id,
+      rating: data.rating,
+      comment: data.comment,
+      approved: data.approved,
+      adminReply: data.admin_reply,
+    });
     setComment("");
     setRating(0);
+  }
+
+  async function handleDelete() {
+    if (!mine) return;
+    setDeleting(true);
+    const { error } = await supabase.from("reviews").delete().eq("id", mine.id);
+    setDeleting(false);
+    if (error) {
+      console.error("review delete failed:", error);
+      setError("Couldn't delete that - try again in a moment.");
+      return;
+    }
+    setMine(null);
   }
 
   return (
@@ -88,10 +159,17 @@ export default function ProductReviews({
         {reviews.map((r) => (
           <div key={r.id}>
             <div className="flex items-center gap-2.5">
+              <Avatar url={r.avatarUrl} name={r.customerName} />
               <Stars rating={r.rating} />
               <span className="text-sm font-medium text-ink">{r.customerName}</span>
             </div>
             <p className="text-sm text-ink-soft mt-1.5 leading-relaxed">{r.comment}</p>
+            {r.adminReply && (
+              <div className="mt-2 ml-4 pl-3 border-l-2 border-rule">
+                <p className="text-xs font-medium text-ink">Sarautile Ceramics</p>
+                <p className="text-sm text-ink-soft mt-0.5 leading-relaxed">{r.adminReply}</p>
+              </div>
+            )}
           </div>
         ))}
         {reviews.length === 0 && (
@@ -100,12 +178,35 @@ export default function ProductReviews({
       </div>
 
       <div className="mt-8 max-w-[420px]">
-        {!user ? (
+        {!isLoaded ? null : !user ? (
           <p className="text-sm text-ink-faint">Sign in to leave a review.</p>
-        ) : done ? (
-          <p className="text-sm text-sage-ink">
-            Thanks - your review is waiting on a quick approval before it shows here.
-          </p>
+        ) : mine ? (
+          <div>
+            <div className="flex items-center gap-2.5">
+              <Stars rating={mine.rating} />
+              <span className="text-sm font-medium text-ink">Your review</span>
+              {!mine.approved && (
+                <span className="text-xs text-ink-faint">waiting on approval</span>
+              )}
+            </div>
+            <p className="text-sm text-ink-soft mt-1.5 leading-relaxed">{mine.comment}</p>
+            {mine.adminReply && (
+              <div className="mt-2 ml-4 pl-3 border-l-2 border-rule">
+                <p className="text-xs font-medium text-ink">Sarautile Ceramics</p>
+                <p className="text-sm text-ink-soft mt-0.5 leading-relaxed">{mine.adminReply}</p>
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={deleting}
+              className="inline-flex items-center gap-1.5 text-xs text-ink-faint hover:text-warn-ink mt-2.5 cursor-pointer disabled:opacity-60"
+            >
+              <Trash2 size={13} strokeWidth={1.8} aria-hidden />
+              {deleting ? "Deleting…" : "Delete review"}
+            </button>
+            {error && <p className="text-sm text-warn-ink mt-1.5">{error}</p>}
+          </div>
         ) : (
           <form onSubmit={submit} className="flex flex-col gap-3">
             <span className="field-label">
