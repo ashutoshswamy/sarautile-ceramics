@@ -182,6 +182,27 @@ create policy "users manage their own wishlist" on wishlist_items
   using ((select auth.jwt()->>'sub') = user_id)
   with check ((select auth.jwt()->>'sub') = user_id);
 
+create table addresses (
+  id bigserial primary key,
+  user_id text not null,
+  label text not null default 'Home',
+  first_name text not null,
+  last_name text not null,
+  address text not null,
+  city text not null,
+  state text not null,
+  pin text not null,
+  is_default boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+alter table addresses enable row level security;
+
+create policy "users manage their own addresses" on addresses
+  for all to authenticated
+  using ((select auth.jwt()->>'sub') = user_id)
+  with check ((select auth.jwt()->>'sub') = user_id);
+
 -- ---- kiln-opening email signups (public, write-only) ----
 
 create table kiln_signups (
@@ -214,10 +235,10 @@ alter table wholesale_inquiries enable row level security;
 create policy "anyone can send a wholesale inquiry" on wholesale_inquiries
   for insert to anon, authenticated with check (true);
 
--- ---- orders (checkout writes a real row via Razorpay; admin-only access -
--- there is no user-facing "my orders" page, so no authenticated policy is
--- needed here - the service-role client in app/checkout/actions.ts and
--- app/admin/orders/** is the only thing that ever touches these tables) ----
+-- ---- orders (checkout writes a real row via Razorpay; the service-role
+-- client in app/checkout/actions.ts and app/admin/orders/** can read/write
+-- every row, and signed-in users can additionally read their own via the
+-- policies below - see app/profile/page.tsx) ----
 
 create table orders (
   id bigserial primary key,
@@ -251,3 +272,9 @@ create table order_items (
 
 alter table orders enable row level security;
 alter table order_items enable row level security;
+
+create policy "users can view their own orders" on orders
+  for select to authenticated using ((select auth.jwt()->>'sub') = user_id);
+
+create policy "users can view their own order items" on order_items
+  for select to authenticated using ((select auth.jwt()->>'sub') = user_id);

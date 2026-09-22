@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import Image from "next/image";
 import { gsap, useGSAP } from "@/lib/gsap";
 
 export default function HeroPotAnimation({
@@ -33,12 +34,14 @@ export default function HeroPotAnimation({
 
   return (
     <div className="relative w-full max-w-[320px] sm:max-w-[400px] md:max-w-[460px] aspect-square mx-auto">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         ref={potRef}
         src="/hero/hero-image.png"
         alt="Handcrafted terracotta pot"
-        className="absolute inset-0 h-full w-full object-contain"
+        fill
+        priority
+        sizes="(min-width: 768px) 460px, 90vw"
+        className="object-contain"
         draggable={false}
       />
     </div>

@@ -11,14 +11,13 @@ import { useCart } from "@/components/CartContext";
 import { useWishlist } from "@/components/WishlistContext";
 import { useProducts } from "@/components/ProductsContext";
 import PlaceholderPhoto from "@/components/PlaceholderPhoto";
-import { ProductsIcon, CareIcon } from "@/components/icons";
+import { ProductsIcon } from "@/components/icons";
 import { gsap, useGSAP } from "@/lib/gsap";
 
 const MAX_SUGGESTIONS_PER_GROUP = 4;
 
 const NAV = [
   { href: "/products", label: "Shop", Icon: ProductsIcon },
-  { href: "/care", label: "Care", Icon: CareIcon },
 ];
 
 // GSAP replacement for the old `.nav-link:hover .icon-write/.icon-drop/.icon-box`
@@ -145,6 +144,11 @@ export default function Header() {
   // Reset menu/search on route change - adjusted during render (React's
   // documented pattern) instead of an effect, so it can't cascade renders.
   const [prevPathname, setPrevPathname] = useState(pathname);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   if (prevPathname !== pathname) {
     setPrevPathname(pathname);
     setMenuOpen(false);
@@ -246,7 +250,7 @@ export default function Header() {
           className="site-logo mr-auto shrink-0 flex items-center gap-2 text-[1.05rem] sm:text-lg font-medium tracking-tight text-ink no-underline"
           {...hoverHandlers({ opacity: 0.7 }, { opacity: 1 })}
         >
-          <Image src="/logo-nobg.png" alt="" width={2172} height={724} priority className="h-16 w-auto sm:h-20" />
+          <Image src="/logo-nobg.png" alt="" width={240} height={80} priority className="h-16 w-auto sm:h-20" />
         </Link>
 
         <nav className="hidden sm:flex items-center gap-7">
@@ -259,6 +263,11 @@ export default function Header() {
           {user ? (
             <UserButton>
               <UserButton.MenuItems>
+                <UserButton.Link
+                  label="Profile"
+                  href="/profile"
+                  labelIcon={<User size={16} strokeWidth={1.6} />}
+                />
                 <UserButton.Link
                   label={`Wishlist${wishCount > 0 ? ` (${wishCount})` : ""}`}
                   href="/wishlist"
@@ -389,7 +398,7 @@ export default function Header() {
         </div>
       </nav>
 
-      {typeof document !== "undefined" && createPortal(
+      {mounted && createPortal(
         <div
           className="search-overlay"
           style={{ pointerEvents: searchOpen ? "auto" : "none" }}

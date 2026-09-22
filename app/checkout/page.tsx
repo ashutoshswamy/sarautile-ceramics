@@ -177,11 +177,11 @@ export default function CheckoutPage() {
             </label>
             <label className="field-label">
               First name
-              <input name="firstName" required className="field" />
+              <input name="firstName" required defaultValue={user.firstName ?? ""} className="field" />
             </label>
             <label className="field-label">
               Last name
-              <input name="lastName" required className="field" />
+              <input name="lastName" required defaultValue={user.lastName ?? ""} className="field" />
             </label>
             <label className="field-label col-span-2">
               Address

@@ -57,7 +57,7 @@ export default function AuthAside() {
 
       <div className="relative z-10 max-w-[24rem]">
         <Link href="/" className="inline-block shrink-0">
-          <Image src="/logo-nobg.png" alt="" width={2172} height={724} className="h-14 w-auto xl:h-16" />
+          <Image src="/logo-nobg.png" alt="" width={192} height={64} className="h-14 w-auto xl:h-16" />
         </Link>
 
         <div key={modeKey} ref={fadeRef} className="mt-10">

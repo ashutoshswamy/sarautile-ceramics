@@ -12,10 +12,21 @@ let hasPlayedThisLoad = false;
 export default function Hero() {
   const textRef = useRef<HTMLDivElement>(null);
   const videoWrapRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const ctaRef = useRef<HTMLAnchorElement>(null);
   const [videoDone, setVideoDone] = useState(hasPlayedThisLoad);
 
   useHoverTween(ctaRef, { backgroundColor: "var(--terracotta-hover)" });
+
+  useEffect(() => {
+    // ponytail: React doesn't reliably set the `muted` property from the
+    // attribute on mount, so mobile browsers block autoplay and show a
+    // play button. Set it imperatively before calling play().
+    const video = videoRef.current;
+    if (!video || videoDone) return;
+    video.muted = true;
+    video.play().catch(() => {});
+  }, [videoDone]);
 
   useEffect(() => {
     if (videoDone) return;
@@ -53,6 +64,7 @@ export default function Hero() {
       {!videoDone && (
         <div ref={videoWrapRef} className="fixed inset-0 z-[100] bg-ink origin-right">
           <video
+            ref={videoRef}
             className="h-full w-full object-cover"
             src="/hero/hero-video.mp4"
             autoPlay

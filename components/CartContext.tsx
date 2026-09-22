@@ -8,10 +8,31 @@ import {
   useMemo,
   useState,
 } from "react";
-import { usePathname, useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useAuthedSupabase } from "@/lib/useAuthedSupabase";
 import type { CartLine } from "@/lib/cart";
+
+// Signed-out cart lives in localStorage so people can add to cart before
+// signing in - checkout is what actually requires an account. Merged into
+// Supabase (see the load effect below) the moment they sign in.
+const GUEST_CART_KEY = "guest_cart";
+
+function readGuestCart(): CartLine[] {
+  try {
+    const raw = localStorage.getItem(GUEST_CART_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeGuestCart(lines: CartLine[]) {
+  try {
+    localStorage.setItem(GUEST_CART_KEY, JSON.stringify(lines));
+  } catch {
+    // ponytail: best-effort persistence, cart still works in-memory for the tab
+  }
+}
 
 type CartContextValue = {
   lines: CartLine[];
@@ -36,25 +57,43 @@ const logIfError = ({ error }: { error: unknown }) => {
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const { user, isLoaded } = useUser();
   const supabase = useAuthedSupabase();
-  const router = useRouter();
-  const pathname = usePathname();
   const [lines, setLines] = useState<CartLine[]>([]);
   const [open, setOpen] = useState(false);
 
-  // Cart lives in Supabase per signed-in user - nothing to load when signed
-  // out (the `lines` exposed below is forced to [] in that case, so there's
-  // no stale state to clear here).
+  // Signed out: load whatever's in localStorage. Signed in: merge any guest
+  // cart into Supabase (summing quantities with what's already there, capped
+  // at 9) and load from there from then on.
   useEffect(() => {
-    if (!isLoaded || !user) return;
+    if (!isLoaded) return;
     let cancelled = false;
-    supabase
-      .from("cart_items")
-      .select("product_slug, qty")
-      .then(({ data, error }) => {
-        if (cancelled) return;
-        if (error) return console.error("cart load failed:", describeError(error));
-        setLines((data ?? []).map((r) => ({ slug: r.product_slug, qty: r.qty })));
-      });
+    (async () => {
+      if (!user) {
+        setLines(readGuestCart());
+        return;
+      }
+      const guest = readGuestCart();
+      const { data, error } = await supabase.from("cart_items").select("product_slug, qty");
+      if (cancelled) return;
+      if (error) {
+        console.error("cart load failed:", describeError(error));
+        return;
+      }
+      const existing = (data ?? []).map((r) => ({ slug: r.product_slug, qty: r.qty }));
+      if (guest.length === 0) {
+        setLines(existing);
+        return;
+      }
+      const merged = new Map(existing.map((l) => [l.slug, l.qty]));
+      for (const g of guest) merged.set(g.slug, Math.min(9, (merged.get(g.slug) ?? 0) + g.qty));
+      const mergedLines = Array.from(merged, ([slug, qty]) => ({ slug, qty }));
+      const { error: upsertErr } = await supabase.from("cart_items").upsert(
+        mergedLines.map((l) => ({ user_id: user.id, product_slug: l.slug, qty: l.qty })),
+        { onConflict: "user_id,product_slug" }
+      );
+      if (upsertErr) console.error("cart merge failed:", describeError(upsertErr));
+      localStorage.removeItem(GUEST_CART_KEY);
+      if (!cancelled) setLines(mergedLines);
+    })();
     return () => {
       cancelled = true;
     };
@@ -62,83 +101,100 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const add = useCallback(
     (slug: string, qty = 1) => {
-      if (!user) {
-        router.push(`/signin?redirect_url=${encodeURIComponent(pathname)}`);
-        return;
-      }
       setLines((prev) => {
         const hit = prev.find((l) => l.slug === slug);
         const nextQty = Math.min(9, (hit?.qty ?? 0) + qty);
-        supabase
-          .from("cart_items")
-          .upsert(
-            { user_id: user.id, product_slug: slug, qty: nextQty },
-            { onConflict: "user_id,product_slug" }
-          )
-          .then(logIfError);
-        return hit
+        const next = hit
           ? prev.map((l) => (l === hit ? { ...l, qty: nextQty } : l))
           : [...prev, { slug, qty: nextQty }];
+        if (user) {
+          supabase
+            .from("cart_items")
+            .upsert(
+              { user_id: user.id, product_slug: slug, qty: nextQty },
+              { onConflict: "user_id,product_slug" }
+            )
+            .then(logIfError);
+        } else {
+          writeGuestCart(next);
+        }
+        return next;
       });
     },
-    [user, supabase, router, pathname]
+    [user, supabase]
   );
 
   const setQty = useCallback(
     (slug: string, qty: number) => {
-      if (!user) return;
       if (qty <= 0) {
-        setLines((prev) => prev.filter((l) => l.slug !== slug));
-        supabase
-          .from("cart_items")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("product_slug", slug)
-          .then(logIfError);
+        setLines((prev) => {
+          const next = prev.filter((l) => l.slug !== slug);
+          if (user) {
+            supabase
+              .from("cart_items")
+              .delete()
+              .eq("user_id", user.id)
+              .eq("product_slug", slug)
+              .then(logIfError);
+          } else {
+            writeGuestCart(next);
+          }
+          return next;
+        });
         return;
       }
       const clamped = Math.min(9, qty);
-      setLines((prev) => prev.map((l) => (l.slug === slug ? { ...l, qty: clamped } : l)));
-      supabase
-        .from("cart_items")
-        .update({ qty: clamped })
-        .eq("user_id", user.id)
-        .eq("product_slug", slug)
-        .then(logIfError);
+      setLines((prev) => {
+        const next = prev.map((l) => (l.slug === slug ? { ...l, qty: clamped } : l));
+        if (user) {
+          supabase
+            .from("cart_items")
+            .update({ qty: clamped })
+            .eq("user_id", user.id)
+            .eq("product_slug", slug)
+            .then(logIfError);
+        } else {
+          writeGuestCart(next);
+        }
+        return next;
+      });
     },
     [user, supabase]
   );
 
   const remove = useCallback(
     (slug: string) => {
-      if (!user) return;
-      setLines((prev) => prev.filter((l) => l.slug !== slug));
-      supabase
-        .from("cart_items")
-        .delete()
-        .eq("user_id", user.id)
-        .eq("product_slug", slug)
-        .then(logIfError);
+      setLines((prev) => {
+        const next = prev.filter((l) => l.slug !== slug);
+        if (user) {
+          supabase
+            .from("cart_items")
+            .delete()
+            .eq("user_id", user.id)
+            .eq("product_slug", slug)
+            .then(logIfError);
+        } else {
+          writeGuestCart(next);
+        }
+        return next;
+      });
     },
     [user, supabase]
   );
 
   const clear = useCallback(() => {
-    if (!user) return;
     setLines([]);
-    supabase.from("cart_items").delete().eq("user_id", user.id).then(logIfError);
+    if (user) {
+      supabase.from("cart_items").delete().eq("user_id", user.id).then(logIfError);
+    } else {
+      writeGuestCart([]);
+    }
   }, [user, supabase]);
 
-  const visibleLines = useMemo(() => (user ? lines : []), [user, lines]);
-  const count = useMemo(
-    () => visibleLines.reduce((n, l) => n + l.qty, 0),
-    [visibleLines]
-  );
+  const count = useMemo(() => lines.reduce((n, l) => n + l.qty, 0), [lines]);
 
   return (
-    <CartContext.Provider
-      value={{ lines: visibleLines, count, add, setQty, remove, clear, open, setOpen }}
-    >
+    <CartContext.Provider value={{ lines, count, add, setQty, remove, clear, open, setOpen }}>
       {children}
     </CartContext.Provider>
   );

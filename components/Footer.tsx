@@ -32,7 +32,7 @@ export default async function Footer() {
         <div className="grid gap-10 sm:grid-cols-[1.3fr_1fr_1fr_1fr]">
           <div>
             <span className="flex items-center gap-2">
-              <Image src="/logo-nobg.png" alt="" width={2172} height={724} className="h-20 w-auto" />
+              <Image src="/logo-nobg.png" alt="" width={240} height={80} className="h-20 w-auto" />
             </span>
             <p className="lede text-sm mt-2 max-w-[34ch]">
               Wheel-thrown stoneware ceramics, glazed by hand and fired twice
