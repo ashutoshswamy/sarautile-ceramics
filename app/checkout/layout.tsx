@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Checkout — Sara Utile Ceramics" };
+export const metadata: Metadata = {
+  title: "Checkout — Sara Utile Ceramics",
+  robots: { index: false, follow: false },
+};
 
 export default function CheckoutLayout({
   children,

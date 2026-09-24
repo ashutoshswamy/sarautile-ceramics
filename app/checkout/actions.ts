@@ -2,7 +2,11 @@
 
 import { currentUser } from "@clerk/nextjs/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
-import { createRazorpayOrder, verifyRazorpaySignature } from "@/lib/razorpay";
+import {
+  createRazorpayOrder,
+  fetchRazorpayOrder,
+  verifyRazorpaySignature,
+} from "@/lib/razorpay";
 
 // Source of truth for what a cart actually costs - always re-derives prices
 // from the products table and re-validates the discount code server-side.
@@ -25,7 +29,8 @@ async function priceCart(
   discountCode: string | null,
   userId: string
 ) {
-  if (items.length === 0) throw new Error("Your cart is empty.");
+  if (!Array.isArray(items) || items.length === 0) throw new Error("Your cart is empty.");
+  if (items.length > 50) throw new Error("Too many items in one order.");
   const supabase = getSupabaseAdmin();
 
   const { data: products, error } = await supabase
@@ -41,7 +46,7 @@ async function priceCart(
   const lines = items.map((item) => {
     const price = priceBySlug.get(item.slug);
     if (price == null) throw new Error(`"${item.slug}" is no longer available.`);
-    const qty = Math.min(9, Math.max(1, Math.round(item.qty)));
+    const qty = Math.min(9, Math.max(1, Math.round(Number(item.qty)) || 1));
     return { slug: item.slug, qty, unitPrice: price, lineTotal: price * qty };
   });
   const subtotal = lines.reduce((sum, l) => sum + l.lineTotal, 0);
@@ -67,14 +72,21 @@ async function priceCart(
 }
 
 export async function startPayment(input: {
+  shipping: PlaceOrderInput["shipping"];
   items: { slug: string; qty: number }[];
   discountCode: string | null;
 }) {
   const user = await currentUser();
   if (!user) throw new Error("Sign in to check out.");
+  // Reject bad shipping details before charging, not after.
+  cleanShipping(input.shipping);
 
   const { total } = await priceCart(input.items, input.discountCode, user.id);
-  const order = await createRazorpayOrder(Math.round(total * 100), `rcpt_${Date.now()}`);
+  // user_id in notes lets placeOrder confirm this payment belongs to the
+  // same signed-in user - a paid order id can't be replayed by someone else.
+  const order = await createRazorpayOrder(Math.round(total * 100), `rcpt_${Date.now()}`, {
+    user_id: user.id,
+  });
   return {
     orderId: order.id,
     amount: order.amount,
@@ -113,24 +125,46 @@ export async function placeOrder(input: PlaceOrderInput) {
   );
   if (!verified) throw new Error("Payment could not be verified.");
 
+  const shipping = cleanShipping(input.shipping);
+
   const { lines, subtotal, discountAmount, appliedCode, total } = await priceCart(
     input.items,
     input.discountCode,
     user.id
   );
 
+  // The signature only proves *some* payment for this Razorpay order went
+  // through. Also check the order was created for this user and charged
+  // exactly what this cart costs now - otherwise a cheap cart's payment
+  // could be replayed to "buy" an expensive one.
+  const rzpOrder = await fetchRazorpayOrder(input.razorpay.orderId);
+  const notes = Array.isArray(rzpOrder.notes) ? {} : rzpOrder.notes;
+  if (
+    notes.user_id !== user.id ||
+    rzpOrder.currency !== "INR" ||
+    rzpOrder.amount !== Math.round(total * 100)
+  ) {
+    throw new Error("Payment could not be verified.");
+  }
+
   const supabase = getSupabaseAdmin();
+  const { count: existing } = await supabase
+    .from("orders")
+    .select("id", { count: "exact", head: true })
+    .eq("razorpay_order_id", input.razorpay.orderId);
+  if (existing) throw new Error("This payment has already been used for an order.");
+
   const { data: order, error: orderErr } = await supabase
     .from("orders")
     .insert({
       user_id: user.id,
-      email: input.shipping.email,
-      first_name: input.shipping.firstName,
-      last_name: input.shipping.lastName,
-      address: input.shipping.address,
-      city: input.shipping.city,
-      state: input.shipping.state,
-      pin: input.shipping.pin,
+      email: shipping.email,
+      first_name: shipping.firstName,
+      last_name: shipping.lastName,
+      address: shipping.address,
+      city: shipping.city,
+      state: shipping.state,
+      pin: shipping.pin,
       subtotal,
       discount_code: appliedCode,
       discount_amount: discountAmount,
@@ -166,6 +200,23 @@ export async function placeOrder(input: PlaceOrderInput) {
   );
 
   return { orderId: order.id };
+}
+
+function cleanShipping(s: PlaceOrderInput["shipping"]) {
+  const field = (v: unknown, max: number) => String(v ?? "").trim().slice(0, max);
+  const out = {
+    email: field(s?.email, 254),
+    firstName: field(s?.firstName, 100),
+    lastName: field(s?.lastName, 100),
+    address: field(s?.address, 500),
+    city: field(s?.city, 100),
+    state: field(s?.state, 100),
+    pin: field(s?.pin, 10),
+  };
+  if (Object.values(out).some((v) => !v)) throw new Error("Fill in every shipping field.");
+  if (!/^\S+@\S+\.\S+$/.test(out.email)) throw new Error("Enter a valid email.");
+  if (!/^\d{6}$/.test(out.pin)) throw new Error("Enter a valid 6-digit PIN code.");
+  return out;
 }
 
 export async function applyDiscountCode(rawCode: string, subtotal: number) {

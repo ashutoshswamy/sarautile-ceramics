@@ -62,7 +62,7 @@ export default function CheckoutPage() {
 
     let razorpayOrder;
     try {
-      razorpayOrder = await startPayment({ items: cartItems, discountCode });
+      razorpayOrder = await startPayment({ shipping, items: cartItems, discountCode });
     } catch {
       setError("Couldn't start payment - try again in a moment.");
       setPlacing(false);
@@ -197,7 +197,15 @@ export default function CheckoutPage() {
             </label>
             <label className="field-label col-span-2">
               PIN code
-              <input name="pin" required className="field" />
+              <input
+                name="pin"
+                required
+                inputMode="numeric"
+                pattern="\d{6}"
+                maxLength={6}
+                title="6-digit PIN code"
+                className="field"
+              />
             </label>
           </div>
 

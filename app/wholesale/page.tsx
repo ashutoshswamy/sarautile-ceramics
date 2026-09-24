@@ -12,7 +12,12 @@ const FACT_ICON: Record<string, typeof Package> = {
   Stamp: Stamp,
 };
 
-export const metadata: Metadata = { title: "Wholesale - Sara Utile Ceramics" };
+export const metadata: Metadata = {
+  title: "Wholesale handmade ceramics for cafes & stores - Sara Utile Ceramics",
+  description:
+    "Stock handmade stoneware in your cafe, restaurant or shop. Wholesale pricing and minimums for Sara Utile Ceramics.",
+  alternates: { canonical: "/wholesale" },
+};
 
 export default function WholesalePage() {
   return (

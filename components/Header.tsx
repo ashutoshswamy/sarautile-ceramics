@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
@@ -144,11 +144,8 @@ export default function Header() {
   // Reset menu/search on route change - adjusted during render (React's
   // documented pattern) instead of an effect, so it can't cascade renders.
   const [prevPathname, setPrevPathname] = useState(pathname);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  // true only on the client - portal target (document.body) exists there.
+  const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false);
   if (prevPathname !== pathname) {
     setPrevPathname(pathname);
     setMenuOpen(false);
@@ -514,4 +511,8 @@ export default function Header() {
       )}
     </header>
   );
+}
+
+function noopSubscribe() {
+  return () => {};
 }

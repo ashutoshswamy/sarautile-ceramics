@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import Hero from "@/components/Hero";
@@ -21,6 +22,8 @@ import {
 // this at build time made a slow/unreachable Supabase response fail the
 // whole deploy (see "Gateway Timeout" prerendering "/").
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 const VALUES = [
   {

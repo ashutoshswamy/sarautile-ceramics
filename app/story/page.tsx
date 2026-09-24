@@ -3,7 +3,12 @@ import { timeline } from "@/lib/data";
 import Reveal from "@/components/Reveal";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Our story - Sara Utile Ceramics" };
+export const metadata: Metadata = {
+  title: "Our story - Sara Utile Ceramics",
+  description:
+    "Two people, one wheel, a workshop in India. How Sara Utile Ceramics makes every piece slowly and by hand.",
+  alternates: { canonical: "/story" },
+};
 
 export default function StoryPage() {
   return (

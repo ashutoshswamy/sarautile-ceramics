@@ -9,10 +9,11 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { slug } = await props.params;
   const collection = await getCollectionMeta(slug);
+  if (!collection) return { title: "Collection - Sara Utile Ceramics", robots: { index: false } };
   return {
-    title: collection
-      ? `${collection.name} - Sara Utile Ceramics`
-      : "Collection - Sara Utile Ceramics",
+    title: `${collection.name} - handmade ceramics collection | Sara Utile Ceramics`,
+    description: `Shop the ${collection.name} collection - handmade wheel-thrown stoneware by Sara Utile Ceramics, India.`,
+    alternates: { canonical: `/collections/${slug}` },
   };
 }
 

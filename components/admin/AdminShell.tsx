@@ -84,7 +84,12 @@ export default function AdminShell({
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  useEffect(() => setMenuOpen(false), [pathname]);
+  // Close menu on route change - adjusted during render, not in an effect.
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
+    setMenuOpen(false);
+  }
 
   useEffect(() => {
     if (!menuOpen) return;

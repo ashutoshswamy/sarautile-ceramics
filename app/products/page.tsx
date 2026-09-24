@@ -8,7 +8,10 @@ import { getProducts, getCategories } from "@/lib/queries";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "All the ceramics - Sara Utile Ceramics",
+  title: "Shop handmade ceramics - Sara Utile Ceramics",
+  description:
+    "Browse every wheel-thrown stoneware piece in stock - mugs, bowls, plates and vases, handmade in small batches in India.",
+  alternates: { canonical: "/products" },
 };
 
 export default async function ProductsPage(props: PageProps<"/products">) {

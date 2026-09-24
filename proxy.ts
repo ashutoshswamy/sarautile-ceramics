@@ -10,5 +10,8 @@ export const config = {
   matcher: [
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:jpg|jpeg|png|gif|svg|webp|ico|css|js)$).*)",
     "/(api|trpc)(.*)",
+    // Clerk's Frontend API proxy serves clerk.browser.js etc. from here - the
+    // static-file exclusion above would otherwise skip those .js requests.
+    "/__clerk/(.*)",
   ],
 };

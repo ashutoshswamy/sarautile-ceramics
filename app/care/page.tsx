@@ -3,7 +3,11 @@ import { care } from "@/lib/data";
 import Reveal from "@/components/Reveal";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Care - Sara Utile Ceramics" };
+export const metadata: Metadata = {
+  title: "Caring for your ceramics - Sara Utile Ceramics",
+  description: "How to wash, use and look after handmade stoneware so it lasts for years.",
+  alternates: { canonical: "/care" },
+};
 
 // verdict → icon; unknown verdicts fall back to Info
 const VERDICT_ICON: Record<string, typeof Check> = {
