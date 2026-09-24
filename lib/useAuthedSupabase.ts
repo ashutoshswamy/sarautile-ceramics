@@ -1,14 +1,19 @@
 "use client";
 
 import { useMemo } from "react";
-import { useSession } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 import { createClient } from "@supabase/supabase-js";
 
 // Attaches the signed-in Clerk user's token to every request so Supabase RLS
 // (see supabase/schema.sql) can see auth.jwt()->>'sub' and scope rows to
 // them. Requires Clerk enabled as a Third-Party Auth provider in Supabase.
+//
+// Keyed on sessionId, not Clerk's `session` object: that object is replaced
+// on every token refresh/focus, which rebuilt the client and re-ran every
+// [supabase]-dependent load effect - its SELECT could land before an
+// in-flight add's upsert and wipe the optimistic cart.
 export function useAuthedSupabase() {
-  const { session } = useSession();
+  const { getToken, sessionId } = useAuth();
   return useMemo(
     () =>
       createClient(
@@ -16,19 +21,20 @@ export function useAuthedSupabase() {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
           accessToken: async () => {
-            const token = await session?.getToken();
+            const token = await getToken();
             // ponytail: Clerk caches session tokens for ~60s. If the cached
             // token's `iat` is still this close to "now", Supabase can see
             // it as ahead of its own clock and reject it with PGRST303
             // ("JWT issued at future") - mint fresh instead of risking that.
             if (token && iatTooCloseToNow(token)) {
-              return (await session?.getToken({ skipCache: true })) ?? null;
+              return (await getToken({ skipCache: true })) ?? null;
             }
             return token ?? null;
           },
         }
       ),
-    [session]
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- getToken always reads the current session
+    [sessionId]
   );
 }
 

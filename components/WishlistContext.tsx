@@ -27,13 +27,14 @@ const logIfError = ({ error }: { error: unknown }) => {
 
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
   const { user, isLoaded } = useUser();
+  const userId = user?.id;
   const supabase = useAuthedSupabase();
   const [slugs, setSlugs] = useState<string[]>([]);
 
   // Wishlist lives in Supabase per signed-in user - `slugs` exposed below is
   // forced to [] when signed out, so there's no stale state to clear here.
   useEffect(() => {
-    if (!isLoaded || !user) return;
+    if (!isLoaded || !userId) return;
     let cancelled = false;
     supabase
       .from("wishlist_items")
@@ -46,7 +47,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [isLoaded, user, supabase]);
+  }, [isLoaded, userId, supabase]);
 
   const visibleSlugs = useMemo(() => (user ? slugs : []), [user, slugs]);
   const has = useCallback(

@@ -56,6 +56,7 @@ const logIfError = ({ error }: { error: unknown }) => {
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const { user, isLoaded } = useUser();
+  const userId = user?.id;
   const supabase = useAuthedSupabase();
   const [lines, setLines] = useState<CartLine[]>([]);
   const [open, setOpen] = useState(false);
@@ -67,7 +68,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (!isLoaded) return;
     let cancelled = false;
     (async () => {
-      if (!user) {
+      if (!userId) {
         setLines(readGuestCart());
         return;
       }
@@ -87,7 +88,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       for (const g of guest) merged.set(g.slug, Math.min(9, (merged.get(g.slug) ?? 0) + g.qty));
       const mergedLines = Array.from(merged, ([slug, qty]) => ({ slug, qty }));
       const { error: upsertErr } = await supabase.from("cart_items").upsert(
-        mergedLines.map((l) => ({ user_id: user.id, product_slug: l.slug, qty: l.qty })),
+        mergedLines.map((l) => ({ user_id: userId, product_slug: l.slug, qty: l.qty })),
         { onConflict: "user_id,product_slug" }
       );
       if (upsertErr) console.error("cart merge failed:", describeError(upsertErr));
@@ -97,7 +98,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [isLoaded, user, supabase]);
+  }, [isLoaded, userId, supabase]);
 
   const add = useCallback(
     (slug: string, qty = 1) => {
