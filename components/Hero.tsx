@@ -47,7 +47,9 @@ export default function Hero() {
   };
 
   const handleVideoEnd = () => {
+    if (hasPlayedThisLoad) return; // skip + onEnded can both fire
     hasPlayedThisLoad = true;
+    videoRef.current?.pause();
     if (!videoWrapRef.current) return setVideoDone(true);
     gsap.to(videoWrapRef.current, {
       xPercent: 100,
@@ -73,6 +75,13 @@ export default function Hero() {
             onEnded={handleVideoEnd}
             onError={handleVideoEnd}
           />
+          <button
+            type="button"
+            onClick={handleVideoEnd}
+            className="absolute bottom-8 right-6 sm:right-10 rounded-full bg-ink/40 px-4 py-2 text-xs tracking-[0.2em] lowercase text-paper backdrop-blur-sm hover:bg-ink/60 cursor-pointer"
+          >
+            skip
+          </button>
         </div>
       )}
 
