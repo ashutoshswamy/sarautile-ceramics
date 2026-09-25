@@ -75,6 +75,14 @@ export default function Loader() {
     return () => cancelAnimationFrame(raf);
   }, [isHome, gone]);
 
+  // Escape skips the intro, same as the Skip button.
+  useEffect(() => {
+    if (!isHome || hide) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setHide(true);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isHome, hide]);
+
   // word pulse + bar fill, was CSS `loader-word`/`loader-fill` keyframes
   useGSAP(() => {
     if (!isHome || gone || !wordRef.current || !barFillRef.current) return;
@@ -139,6 +147,13 @@ export default function Loader() {
       <div className="loader-bar" aria-hidden="true">
         <div ref={barFillRef} className="loader-bar-fill" style={{ animation: "none" }} />
       </div>
+      <button
+        type="button"
+        onClick={() => setHide(true)}
+        className="absolute bottom-8 right-6 sm:right-10 text-xs tracking-[0.2em] lowercase text-ink-soft hover:text-ink cursor-pointer px-3 py-2"
+      >
+        skip
+      </button>
     </div>
   );
 }
