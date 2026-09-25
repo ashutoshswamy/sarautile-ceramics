@@ -41,8 +41,17 @@ export function sectionOf(pathname: string): Section {
   return (pathname.split("/")[2] || "dashboard") as Section;
 }
 
-export function sectionHref(section: Section) {
-  return section === "dashboard" ? "/admin" : `/admin/${section}`;
+// Admins browse the panel at /admin, staff at /staff (proxy.ts rewrites
+// /staff onto the same app/admin pages).
+export const ADMIN_BASE = "/admin";
+export const STAFF_BASE = "/staff";
+
+export function panelBase(access: Access) {
+  return access.role === "admin" ? ADMIN_BASE : STAFF_BASE;
+}
+
+export function sectionHref(section: Section, base = ADMIN_BASE) {
+  return section === "dashboard" ? base : `${base}/${section}`;
 }
 
 export function isSection(key: string): key is keyof typeof SECTIONS {

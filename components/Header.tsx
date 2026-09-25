@@ -134,7 +134,10 @@ export default function Header() {
   const { count: wishCount } = useWishlist();
   const { products, categories, collections } = useProducts();
   const { user } = useUser();
-  const isAdmin = user?.publicMetadata?.role === "admin";
+  const role = user?.publicMetadata?.role;
+  // Staff get their own /staff URL (same pages, see proxy.ts).
+  const panelLink =
+    role === "admin" ? { label: "Admin", href: "/admin" } : role === "staff" ? { label: "Staff", href: "/staff" } : null;
 
   const closeSearch = () => {
     setSearchOpen(false);
@@ -270,10 +273,10 @@ export default function Header() {
                   href="/wishlist"
                   labelIcon={<Heart size={16} strokeWidth={1.6} />}
                 />
-                {isAdmin && (
+                {panelLink && (
                   <UserButton.Link
-                    label="Admin"
-                    href="/admin"
+                    label={panelLink.label}
+                    href={panelLink.href}
                     labelIcon={<Shield size={16} strokeWidth={1.6} />}
                   />
                 )}
@@ -372,10 +375,10 @@ export default function Header() {
                     href="/wishlist"
                     labelIcon={<Heart size={16} strokeWidth={1.6} />}
                   />
-                  {isAdmin && (
+                  {panelLink && (
                     <UserButton.Link
-                      label="Admin"
-                      href="/admin"
+                      label={panelLink.label}
+                      href={panelLink.href}
                       labelIcon={<Shield size={16} strokeWidth={1.6} />}
                     />
                   )}

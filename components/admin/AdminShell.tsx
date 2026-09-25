@@ -24,7 +24,7 @@ import {
   UserCog,
   History,
 } from "lucide-react";
-import { SECTIONS, canAccess, sectionHref, type Access, type Section } from "@/lib/adminSections";
+import { SECTIONS, canAccess, panelBase, sectionHref, type Access, type Section } from "@/lib/adminSections";
 
 const NAV: { section: Section; label: string; Icon: typeof LayoutGrid }[] = [
   { section: "dashboard", label: SECTIONS.dashboard, Icon: LayoutGrid },
@@ -45,8 +45,8 @@ const NAV: { section: Section; label: string; Icon: typeof LayoutGrid }[] = [
   { section: "activity", label: "Staff activity", Icon: History },
 ];
 
-function isActive(pathname: string, href: string) {
-  return href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
+function isActive(pathname: string, href: string, base: string) {
+  return href === base ? pathname === base : pathname.startsWith(href);
 }
 
 function NavLinks({
@@ -61,8 +61,9 @@ function NavLinks({
   return (
     <nav className="flex flex-col gap-1">
       {NAV.filter((item) => canAccess(access, item.section)).map((item) => {
-        const href = sectionHref(item.section);
-        const active = isActive(pathname, href);
+        const base = panelBase(access);
+        const href = sectionHref(item.section, base);
+        const active = isActive(pathname, href, base);
         return (
           <Link
             key={href}
