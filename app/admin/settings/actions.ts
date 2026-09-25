@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/adminAuth";
+import { requireSection } from "@/lib/adminAuth";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { redirectWithToast, errorMessage } from "@/lib/actionRedirect";
 
@@ -43,7 +43,7 @@ function resolvePosition(formData: FormData, breakpoint: (typeof BREAKPOINTS)[nu
 }
 
 export async function updateSiteSettings(formData: FormData) {
-  await requireAdmin();
+  const { log } = await requireSection("settings");
   const supabase = getSupabaseAdmin();
 
   try {
@@ -68,12 +68,13 @@ export async function updateSiteSettings(formData: FormData) {
     redirectWithToast("/admin/settings", errorMessage(err), "error");
   }
 
+  await log("Updated hero images");
   revalidateHero();
   redirectWithToast("/admin/settings", "Changes saved.");
 }
 
 export async function resetSiteSettings() {
-  await requireAdmin();
+  const { log } = await requireSection("settings");
   const { error } = await getSupabaseAdmin()
     .from("site_settings")
     .update({
@@ -88,6 +89,7 @@ export async function resetSiteSettings() {
     .eq("id", 1);
   if (error) redirectWithToast("/admin/settings", error.message, "error");
 
+  await log("Reset hero images to default");
   revalidateHero();
   redirectWithToast("/admin/settings", "Reset to default.");
 }

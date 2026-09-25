@@ -21,38 +21,52 @@ import {
   Menu,
   Settings,
   X,
+  UserCog,
+  History,
 } from "lucide-react";
+import { SECTIONS, canAccess, sectionHref, type Access, type Section } from "@/lib/adminSections";
 
-const NAV = [
-  { href: "/admin", label: "Dashboard", Icon: LayoutGrid },
-  { href: "/admin/analytics", label: "Analytics", Icon: BarChart3 },
-  { href: "/admin/products", label: "Products", Icon: Amphora },
-  { href: "/admin/inventory", label: "Inventory", Icon: Boxes },
-  { href: "/admin/categories", label: "Categories", Icon: Tag },
-  { href: "/admin/collections", label: "Collections", Icon: Layers },
-  { href: "/admin/orders", label: "Orders", Icon: Receipt },
-  { href: "/admin/customers", label: "Customers", Icon: Users },
-  { href: "/admin/discounts", label: "Discounts", Icon: Percent },
-  { href: "/admin/reviews", label: "Reviews", Icon: Star },
-  { href: "/admin/kiln-signups", label: "Kiln signups", Icon: Mail },
-  { href: "/admin/wholesale", label: "Wholesale", Icon: Package },
-  { href: "/admin/instagram", label: "Instagram", Icon: Camera },
-  { href: "/admin/settings", label: "Settings", Icon: Settings },
+const NAV: { section: Section; label: string; Icon: typeof LayoutGrid }[] = [
+  { section: "dashboard", label: SECTIONS.dashboard, Icon: LayoutGrid },
+  { section: "analytics", label: SECTIONS.analytics, Icon: BarChart3 },
+  { section: "products", label: SECTIONS.products, Icon: Amphora },
+  { section: "inventory", label: SECTIONS.inventory, Icon: Boxes },
+  { section: "categories", label: SECTIONS.categories, Icon: Tag },
+  { section: "collections", label: SECTIONS.collections, Icon: Layers },
+  { section: "orders", label: SECTIONS.orders, Icon: Receipt },
+  { section: "customers", label: SECTIONS.customers, Icon: Users },
+  { section: "discounts", label: SECTIONS.discounts, Icon: Percent },
+  { section: "reviews", label: SECTIONS.reviews, Icon: Star },
+  { section: "kiln-signups", label: SECTIONS["kiln-signups"], Icon: Mail },
+  { section: "wholesale", label: SECTIONS.wholesale, Icon: Package },
+  { section: "instagram", label: SECTIONS.instagram, Icon: Camera },
+  { section: "settings", label: SECTIONS.settings, Icon: Settings },
+  { section: "staff", label: "Staff", Icon: UserCog },
+  { section: "activity", label: "Staff activity", Icon: History },
 ];
 
 function isActive(pathname: string, href: string) {
   return href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
 }
 
-function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
+function NavLinks({
+  pathname,
+  access,
+  onNavigate,
+}: {
+  pathname: string;
+  access: Access;
+  onNavigate?: () => void;
+}) {
   return (
     <nav className="flex flex-col gap-1">
-      {NAV.map((item) => {
-        const active = isActive(pathname, item.href);
+      {NAV.filter((item) => canAccess(access, item.section)).map((item) => {
+        const href = sectionHref(item.section);
+        const active = isActive(pathname, href);
         return (
           <Link
-            key={item.href}
-            href={item.href}
+            key={href}
+            href={href}
             onClick={onNavigate}
             aria-current={active ? "page" : undefined}
             className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm no-underline transition-colors border-l-2 ${
@@ -76,9 +90,11 @@ function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () 
 
 export default function AdminShell({
   userLabel,
+  access,
   children,
 }: {
   userLabel: string;
+  access: Access;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -104,7 +120,7 @@ export default function AdminShell({
     <div className="min-h-[calc(100vh-4rem)] md:grid md:grid-cols-[240px_1fr]">
       {/* Desktop sidebar */}
       <aside className="hidden md:flex md:flex-col md:gap-8 md:sticky md:top-16 md:h-[calc(100vh-4rem)] md:overflow-y-auto border-r border-rule px-5 py-8">
-        <NavLinks pathname={pathname} />
+        <NavLinks pathname={pathname} access={access} />
         <div className="mt-auto flex flex-col gap-4">
           <Link
             href="/"
@@ -127,7 +143,7 @@ export default function AdminShell({
           <Menu size={22} strokeWidth={1.6} />
         </button>
         <div className="min-w-0">
-          <span className="kicker">Admin</span>
+          <span className="kicker">{access.role === "admin" ? "Admin" : "Staff"}</span>
           <p className="text-xs text-ink-soft truncate">{userLabel}</p>
         </div>
       </div>
@@ -149,10 +165,10 @@ export default function AdminShell({
                 <X size={20} strokeWidth={1.6} />
               </button>
             </div>
-            <NavLinks pathname={pathname} onNavigate={() => setMenuOpen(false)} />
+            <NavLinks pathname={pathname} access={access} onNavigate={() => setMenuOpen(false)} />
             <div className="mt-auto flex flex-col gap-4">
               <div>
-                <span className="kicker">Admin</span>
+                <span className="kicker">{access.role === "admin" ? "Admin" : "Staff"}</span>
                 <p className="text-sm text-ink-soft mt-1 truncate">{userLabel}</p>
               </div>
               <Link

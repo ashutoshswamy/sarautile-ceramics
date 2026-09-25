@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/lib/adminAuth";
+import { getAdminAccess } from "@/lib/adminAuth";
 import AdminShell from "@/components/admin/AdminShell";
 import type { Metadata } from "next";
 
@@ -12,8 +12,8 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await requireAdmin();
-  const userLabel = user.fullName ?? user.primaryEmailAddress?.emailAddress ?? "Admin";
+  // Per-section access is enforced in proxy.ts; this only admits admin/staff.
+  const { access, label } = await getAdminAccess();
 
-  return <AdminShell userLabel={userLabel}>{children}</AdminShell>;
+  return <AdminShell userLabel={label} access={access}>{children}</AdminShell>;
 }

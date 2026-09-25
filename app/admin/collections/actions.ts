@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/adminAuth";
+import { requireSection } from "@/lib/adminAuth";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { slugify } from "@/lib/slugify";
 import { redirectWithToast } from "@/lib/actionRedirect";
@@ -12,7 +12,7 @@ function revalidateCollections() {
 }
 
 export async function createCollection(formData: FormData) {
-  await requireAdmin();
+  const { log } = await requireSection("collections");
   const name = String(formData.get("name") ?? "").trim();
   if (!name) redirectWithToast("/admin/collections", "Enter a collection name.", "error");
 
@@ -27,15 +27,17 @@ export async function createCollection(formData: FormData) {
     );
   }
 
+  await log(`Added collection "${name}"`);
   revalidateCollections();
   redirectWithToast("/admin/collections", `"${name}" added.`);
 }
 
 export async function deleteCollection(slug: string) {
-  await requireAdmin();
+  const { log } = await requireSection("collections");
   const { error } = await getSupabaseAdmin().from("collections").delete().eq("slug", slug);
   if (error) redirectWithToast("/admin/collections", error.message, "error");
 
+  await log(`Deleted collection "${slug}"`);
   revalidateCollections();
   redirectWithToast("/admin/collections", "Collection deleted.");
 }

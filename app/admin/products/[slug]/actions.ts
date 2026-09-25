@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/adminAuth";
+import { requireSection } from "@/lib/adminAuth";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { slugify } from "@/lib/slugify";
 import { redirectWithToast, errorMessage } from "@/lib/actionRedirect";
@@ -67,7 +67,7 @@ async function uploadProductImages(
 }
 
 export async function updateProduct(slug: string, formData: FormData) {
-  await requireAdmin(); // re-checked here - never trust that the page render alone guarded this
+  const { log, label } = await requireSection("products");
   const supabase = getSupabaseAdmin();
 
   try {
@@ -80,6 +80,7 @@ export async function updateProduct(slug: string, formData: FormData) {
         price: Number(formData.get("price")),
         weight: formData.get("weight") || null,
         left_count: Number(formData.get("left_count")),
+        stock_updated_by: label,
         photo_label: formData.get("photo_label"),
         description: formData.get("description") || null,
         category_slug: formData.get("category_slug") || null,
@@ -106,12 +107,13 @@ export async function updateProduct(slug: string, formData: FormData) {
     redirectWithToast(`/admin/products/${slug}`, errorMessage(err), "error");
   }
 
+  await log(`Edited product "${slug}"`);
   revalidateStorefront(slug);
   redirectWithToast(`/admin/products/${slug}`, "Changes saved.");
 }
 
 export async function createProduct(formData: FormData) {
-  await requireAdmin();
+  const { log, label } = await requireSection("products");
   const supabase = getSupabaseAdmin();
   const name = String(formData.get("name") ?? "").trim();
   const slug = slugify(name);
@@ -125,6 +127,7 @@ export async function createProduct(formData: FormData) {
       price: Number(formData.get("price")),
       weight: formData.get("weight") || null,
       left_count: Number(formData.get("left_count")),
+      stock_updated_by: label,
       photo_label: formData.get("photo_label"),
       description: formData.get("description") || null,
       image_url: imageUrls[0] ?? null,
@@ -154,6 +157,7 @@ export async function createProduct(formData: FormData) {
     redirectWithToast("/admin/products/new", errorMessage(err), "error");
   }
 
+  await log(`Created product "${slug}"`);
   revalidatePath("/admin/products");
   revalidatePath("/products");
   revalidatePath("/");
@@ -161,10 +165,11 @@ export async function createProduct(formData: FormData) {
 }
 
 export async function deleteProduct(slug: string) {
-  await requireAdmin();
+  const { log } = await requireSection("products");
   const { error } = await getSupabaseAdmin().from("products").delete().eq("slug", slug);
   if (error) redirectWithToast(`/admin/products/${slug}`, error.message, "error");
 
+  await log(`Deleted product "${slug}"`);
   revalidateStorefront(slug);
   redirectWithToast("/admin/products", "Product deleted.");
 }
@@ -172,7 +177,7 @@ export async function deleteProduct(slug: string) {
 const MAX_TOTAL_IMAGES = MAX_PRODUCT_IMAGES + 1; // +1 for the cover photo
 
 export async function addProductImages(slug: string, formData: FormData) {
-  await requireAdmin();
+  const { log } = await requireSection("products");
   const supabase = getSupabaseAdmin();
 
   try {
@@ -208,15 +213,17 @@ export async function addProductImages(slug: string, formData: FormData) {
     redirectWithToast(`/admin/products/${slug}`, errorMessage(err), "error");
   }
 
+  await log(`Added photos to product "${slug}"`);
   revalidateStorefront(slug);
   redirectWithToast(`/admin/products/${slug}`, "Photos added.");
 }
 
 export async function deleteProductImage(slug: string, imageId: number) {
-  await requireAdmin();
+  const { log } = await requireSection("products");
   const { error } = await getSupabaseAdmin().from("product_images").delete().eq("id", imageId);
   if (error) redirectWithToast(`/admin/products/${slug}`, error.message, "error");
 
+  await log(`Removed a photo from product "${slug}"`);
   revalidateStorefront(slug);
   redirectWithToast(`/admin/products/${slug}`, "Photo removed.");
 }
@@ -226,7 +233,7 @@ export async function reorderProductImage(
   imageId: number,
   direction: "up" | "down"
 ) {
-  await requireAdmin();
+  const { log } = await requireSection("products");
   const supabase = getSupabaseAdmin();
 
   try {
@@ -257,6 +264,7 @@ export async function reorderProductImage(
     redirectWithToast(`/admin/products/${slug}`, errorMessage(err), "error");
   }
 
+  await log(`Reordered photos on product "${slug}"`);
   revalidateStorefront(slug);
   redirectWithToast(`/admin/products/${slug}`, "Order updated.");
 }

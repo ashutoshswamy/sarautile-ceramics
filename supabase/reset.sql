@@ -27,7 +27,10 @@ drop table if exists
   discount_codes,
   kiln_signups,
   wholesale_inquiries,
-  instagram_posts
+  instagram_posts,
+  staff_logs,
+  inventory_history
 cascade;
 
 drop function if exists decrement_product_stock(text, int);
+drop function if exists log_stock_change();

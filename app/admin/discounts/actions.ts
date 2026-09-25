@@ -1,11 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/adminAuth";
+import { requireSection } from "@/lib/adminAuth";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { redirectWithToast } from "@/lib/actionRedirect";
 
-async function insertDiscountCode(formData: FormData, firstPurchaseOnly: boolean) {
+async function insertDiscountCode(
+  formData: FormData,
+  firstPurchaseOnly: boolean,
+  log: (action: string) => Promise<void>
+) {
   const code = String(formData.get("code") ?? "").trim().toUpperCase();
   const percentOff = Math.trunc(Number(formData.get("percentOff")));
   const expiresAt = String(formData.get("expiresAt") ?? "").trim();
@@ -27,37 +31,40 @@ async function insertDiscountCode(formData: FormData, firstPurchaseOnly: boolean
     );
   }
 
+  await log(`Added discount code "${code}" (${percentOff}% off${firstPurchaseOnly ? ", first purchase only" : ""})`);
   revalidatePath("/admin/discounts");
   redirectWithToast("/admin/discounts", `"${code}" added.`);
 }
 
 export async function createDiscountCode(formData: FormData) {
-  await requireAdmin();
-  await insertDiscountCode(formData, false);
+  const { log } = await requireSection("discounts");
+  await insertDiscountCode(formData, false, log);
 }
 
 export async function createFirstPurchaseDiscountCode(formData: FormData) {
-  await requireAdmin();
-  await insertDiscountCode(formData, true);
+  const { log } = await requireSection("discounts");
+  await insertDiscountCode(formData, true, log);
 }
 
 export async function toggleDiscountCode(code: string, active: boolean) {
-  await requireAdmin();
+  const { log } = await requireSection("discounts");
   const { error } = await getSupabaseAdmin()
     .from("discount_codes")
     .update({ active })
     .eq("code", code);
   if (error) redirectWithToast("/admin/discounts", error.message, "error");
 
+  await log(`${active ? "Enabled" : "Disabled"} discount code "${code}"`);
   revalidatePath("/admin/discounts");
   redirectWithToast("/admin/discounts", active ? `"${code}" enabled.` : `"${code}" disabled.`);
 }
 
 export async function deleteDiscountCode(code: string) {
-  await requireAdmin();
+  const { log } = await requireSection("discounts");
   const { error } = await getSupabaseAdmin().from("discount_codes").delete().eq("code", code);
   if (error) redirectWithToast("/admin/discounts", error.message, "error");
 
+  await log(`Deleted discount code "${code}"`);
   revalidatePath("/admin/discounts");
   redirectWithToast("/admin/discounts", "Code deleted.");
 }
