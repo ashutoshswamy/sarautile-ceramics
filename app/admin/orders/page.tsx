@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, FileText } from "lucide-react";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 type OrderRow = {
@@ -114,8 +114,11 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
                     </span>
                   </td>
                   <td className="px-4 py-3 text-ink-soft">₹{o.total}</td>
-                  <td className="px-4 py-3 text-right">
-                    <Link href={`/admin/orders/${o.id}`} className="link-arrow justify-end">
+                  <td className="px-4 py-3 text-right whitespace-nowrap">
+                    <a href={`/invoice/${o.id}`} download className="link-arrow inline-flex mr-4">
+                      <FileText size={14} strokeWidth={1.8} aria-hidden /> Invoice
+                    </a>
+                    <Link href={`/admin/orders/${o.id}`} className="link-arrow inline-flex">
                       View <ChevronRight size={14} strokeWidth={1.8} aria-hidden />
                     </Link>
                   </td>

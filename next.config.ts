@@ -2,6 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Invoice PDFs (app/invoice/[id]/route.tsx) read these from disk at runtime.
+  serverExternalPackages: ["@react-pdf/renderer"],
+  outputFileTracingIncludes: {
+    "/invoice/[id]": ["./lib/fonts/*.ttf", "./public/logo-nobg.png"],
+  },
   async headers() {
     return [
       {

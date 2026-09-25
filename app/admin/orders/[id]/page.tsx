@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, FileText } from "lucide-react";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import SubmitButton from "@/components/admin/SubmitButton";
 import { updateOrderStatus } from "../actions";
@@ -95,6 +95,9 @@ export default async function AdminOrderDetailPage(
         <div>
           <span className="kicker">Payment</span>
           <p className="text-sm text-ink mt-2 font-mono text-xs">{order.razorpay_payment_id}</p>
+          <a href={`/invoice/${order.id}`} download className="link-arrow inline-flex mt-3 text-sm">
+            <FileText size={14} strokeWidth={1.8} aria-hidden /> Download invoice
+          </a>
         </div>
       </div>
 

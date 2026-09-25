@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
-import { MapPin, Package, Plus, Star, Trash2, User, X } from "lucide-react";
+import { Download, MapPin,Package, Plus, Star, Trash2, User, X } from "lucide-react";
 import { useAuthedSupabase } from "@/lib/useAuthedSupabase";
 
 type OrderRow = {
@@ -113,7 +113,13 @@ function OrdersTab({
             <span>Total paid</span>
             <span className="ml-auto">₹{o.total}</span>
           </div>
-          <p className="text-xs text-ink-faint font-mono mt-2">{o.razorpay_payment_id}</p>
+          <div className="flex items-center mt-2">
+            <p className="text-xs text-ink-faint font-mono">{o.razorpay_payment_id}</p>
+            <a href={`/invoice/${o.id}`} download className="link-arrow ml-auto text-xs">
+              <Download size={13} strokeWidth={1.8} aria-hidden />
+              Invoice
+            </a>
+          </div>
         </div>
       ))}
     </div>

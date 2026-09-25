@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Script from "next/script";
 import { useUser } from "@clerk/nextjs";
@@ -9,7 +9,19 @@ import PlaceholderPhoto from "@/components/PlaceholderPhoto";
 import { useCart } from "@/components/CartContext";
 import { useProducts } from "@/components/ProductsContext";
 import { resolveCart } from "@/lib/cart";
+import { useAuthedSupabase } from "@/lib/useAuthedSupabase";
 import { applyDiscountCode, startPayment, placeOrder } from "./actions";
+
+type SavedAddress = {
+  id: number;
+  label: string;
+  first_name: string;
+  last_name: string;
+  address: string;
+  city: string;
+  state: string;
+  pin: string;
+};
 
 declare global {
   interface Window {
@@ -25,6 +37,23 @@ export default function CheckoutPage() {
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState("");
   const { items, subtotal, count } = resolveCart(lines, findProduct);
+
+  const supabase = useAuthedSupabase();
+  const [addresses, setAddresses] = useState<SavedAddress[]>([]);
+  const [picked, setPicked] = useState<SavedAddress | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("addresses")
+      .select("id, label, first_name, last_name, address, city, state, pin")
+      .order("is_default", { ascending: false })
+      .returns<SavedAddress[]>()
+      .then(({ data }) => {
+        setAddresses(data ?? []);
+        setPicked(data?.[0] ?? null);
+      });
+  }, [user, supabase]);
 
   const [discountInput, setDiscountInput] = useState("");
   const [discount, setDiscount] = useState<{ code: string; amount: number } | null>(null);
@@ -163,7 +192,27 @@ export default function CheckoutPage() {
       <div className="grid gap-10 md:grid-cols-[1.15fr_.85fr] py-10 lg:gap-14">
         <form onSubmit={handlePay}>
           <h1 className="display-3 text-[1.5rem]">Where&apos;s it going?</h1>
-          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3.5 mt-5">
+          {addresses.length > 0 && (
+            <label className="field-label mt-5">
+              Saved address
+              <select
+                value={picked?.id ?? ""}
+                onChange={(e) =>
+                  setPicked(addresses.find((a) => a.id === Number(e.target.value)) ?? null)
+                }
+                className="field"
+              >
+                {addresses.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.label} — {a.address}, {a.city}
+                  </option>
+                ))}
+                <option value="">New address</option>
+              </select>
+            </label>
+          )}
+          {/* key remounts the uncontrolled inputs so defaultValues follow the picked address */}
+          <div key={picked?.id ?? "new"} className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3.5 mt-5">
             <label className="field-label col-span-2">
               Email
               <input
@@ -177,29 +226,30 @@ export default function CheckoutPage() {
             </label>
             <label className="field-label">
               First name
-              <input name="firstName" required defaultValue={user.firstName ?? ""} className="field" />
+              <input name="firstName" required defaultValue={picked?.first_name ?? user.firstName ?? ""} className="field" />
             </label>
             <label className="field-label">
               Last name
-              <input name="lastName" required defaultValue={user.lastName ?? ""} className="field" />
+              <input name="lastName" required defaultValue={picked?.last_name ?? user.lastName ?? ""} className="field" />
             </label>
             <label className="field-label col-span-2">
               Address
-              <input name="address" required className="field" />
+              <input name="address" required defaultValue={picked?.address} className="field" />
             </label>
             <label className="field-label">
               City
-              <input name="city" required className="field" />
+              <input name="city" required defaultValue={picked?.city} className="field" />
             </label>
             <label className="field-label">
               State
-              <input name="state" required className="field" />
+              <input name="state" required defaultValue={picked?.state} className="field" />
             </label>
             <label className="field-label col-span-2">
               PIN code
               <input
                 name="pin"
                 required
+                defaultValue={picked?.pin}
                 inputMode="numeric"
                 pattern="\d{6}"
                 maxLength={6}
