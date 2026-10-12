@@ -21,6 +21,9 @@ export function useAuthedSupabase() {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
           accessToken: async () => {
+            // Client components also render on the server (SSR), where
+            // Clerk's getToken throws and Realtime's constructor calls this.
+            if (typeof window === "undefined") return null;
             const token = await getToken();
             // ponytail: Clerk caches session tokens for ~60s. If the cached
             // token's `iat` is still this close to "now", Supabase can see
