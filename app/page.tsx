@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Hero from "@/components/Hero";
 import KilnNotify from "@/components/KilnNotify";
+import ProductArc from "@/components/ProductArc";
 import ProductRow from "@/components/ProductRow";
 import ShopByCategory from "@/components/ShopByCategory";
 import ShopByCollection from "@/components/ShopByCollection";
@@ -10,6 +11,7 @@ import Reveal from "@/components/Reveal";
 import ValueCard from "@/components/ValueCard";
 import {
   getCollection,
+  getProducts,
   getCategoriesWithProducts,
   getCollectionsWithProducts,
   getInstagramPosts,
@@ -47,7 +49,8 @@ const VALUES = [
 ];
 
 export default async function Home() {
-  const [newArrivals, bestSellers, categories, collections, instagramPosts] = await Promise.all([
+  const [allProducts, newArrivals, bestSellers, categories, collections, instagramPosts] = await Promise.all([
+    getProducts(),
     getCollection("new-arrivals"),
     getCollection("bestsellers"),
     getCategoriesWithProducts(),
@@ -58,6 +61,14 @@ export default async function Home() {
   return (
     <>
       <Hero />
+
+      <section className="border-b border-rule">
+        <div className="container-x pt-12">
+          <span className="kicker">Fresh off the wheel</span>
+          <h2 className="display-2 mt-2">Browse the shelf</h2>
+        </div>
+        <ProductArc products={allProducts.slice(0, 16)} />
+      </section>
 
       <ProductRow title="New arrivals" badge="New arrival" products={newArrivals} />
 
