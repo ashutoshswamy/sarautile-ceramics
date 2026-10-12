@@ -68,6 +68,9 @@
    text-ink-soft on a nav <a>) still win — an unlayered `a { color }` would
    otherwise override every utility on every link. */
 @layer base {
+  html {
+    overflow-x: clip;
+  }
   body {
     background: var(--paper);
     color: var(--ink);

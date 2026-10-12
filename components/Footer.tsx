@@ -4,7 +4,6 @@ import {
   BookOpen,
   Droplets,
   Mail,
-  MapPin,
   Tag,
 } from "lucide-react";
 import { getCategories } from "@/lib/queries";
@@ -58,9 +57,6 @@ export default async function Footer() {
         </div>
         <div className="flex flex-wrap items-center gap-2 mt-10 pt-6 border-t border-rule text-xs text-ink-faint">
           <span>© {new Date().getFullYear()} Sara Utile Ceramics</span>
-          <span aria-hidden>·</span>
-          <MapPin size={13} strokeWidth={1.7} className="shrink-0" />
-          <span>Thrown in India, since 2019</span>
         </div>
       </div>
     </footer>

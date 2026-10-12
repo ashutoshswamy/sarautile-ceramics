@@ -2,13 +2,11 @@
 
 import { useRef, useState } from "react";
 import { Layers, Droplets, Scale, ShoppingBag, Heart, Check } from "lucide-react";
-import PlaceholderPhoto from "@/components/PlaceholderPhoto";
+import ProductGallery from "@/components/ProductGallery";
 import { useCart } from "@/components/CartContext";
 import { useWishlist } from "@/components/WishlistContext";
 import { gsap, useGSAP, useHoverTween } from "@/lib/gsap";
 import type { Product } from "@/lib/data";
-
-const THUMBS = ["handle detail", "inside the rim", "base + stamp", "in a hand"];
 
 const SPEC_ICON: Record<string, typeof Layers> = {
   Body: Layers,
@@ -58,25 +56,10 @@ export default function ProductDetail({ product }: { product: Product }) {
 
   return (
     <div className="grid gap-10 lg:grid-cols-[1.1fr_.9fr] lg:gap-14">
-      <div className="flex flex-col gap-3.5">
-        <PlaceholderPhoto
-          label={product.photoLabel}
-          src={product.imageUrl}
-          rounded="rounded-[28px]"
-          className="aspect-square p-4"
-        />
-        <div className="grid grid-cols-4 gap-3">
-          {THUMBS.map((t) => (
-            <PlaceholderPhoto
-              key={t}
-              label={t}
-              rounded="rounded-[16px]"
-              padding="p-2"
-              className="aspect-square text-[9.5px]"
-            />
-          ))}
-        </div>
-      </div>
+      <ProductGallery
+        label={product.photoLabel}
+        srcs={[product.imageUrl, ...product.images].filter(Boolean)}
+      />
 
       <div>
         <div className="flex items-start gap-3">
