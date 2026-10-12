@@ -1,6 +1,6 @@
 // Product catalog now lives in Supabase - see
 // lib/queries.ts. This file keeps the shared types plus static editorial
-// copy that isn't catalog data (story, timeline, care, wholesale terms).
+// copy that isn't catalog data (story, timeline, care).
 
 export type Product = {
   slug: string;
@@ -95,12 +95,4 @@ export const care = [
     tagBg: "var(--neutral-bg)",
     tagFg: "var(--neutral-ink)",
   },
-];
-
-export const wholesaleFacts = [
-  { k: "Minimum", v: "24 pieces per order" },
-  { k: "Lead time", v: "6-8 weeks from deposit" },
-  { k: "Trade price", v: "50% of retail, 24+" },
-  { k: "Custom glaze", v: "Possible at 100+, adds 3 weeks" },
-  { k: "Stamp", v: "Your mark on the base, no charge" },
 ];

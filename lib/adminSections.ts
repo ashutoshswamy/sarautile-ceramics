@@ -14,7 +14,6 @@ export const SECTIONS = {
   discounts: "Discounts",
   reviews: "Reviews",
   "kiln-signups": "Kiln signups",
-  wholesale: "Wholesale",
   instagram: "Instagram",
   settings: "Settings",
 } as const;

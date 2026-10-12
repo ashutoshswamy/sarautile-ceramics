@@ -2,13 +2,11 @@ import Image from "next/image";
 import {
   Amphora,
   BookOpen,
-  Boxes,
   Droplets,
   Mail,
   MapPin,
   Tag,
 } from "lucide-react";
-import { wholesaleFacts } from "@/lib/data";
 import { getCategories } from "@/lib/queries";
 import FooterLink from "@/components/FooterLink";
 
@@ -56,13 +54,6 @@ export default async function Footer() {
             {STUDIO_LINKS.map((link) => (
               <FooterLink key={link.label} href={link.href} label={link.label} icon={link.icon} />
             ))}
-          </nav>
-          <nav className="flex flex-col gap-1">
-            <span className="kicker mb-2">Wholesale</span>
-            <FooterLink href="/wholesale" label="Trade enquiries" icon={<Boxes {...ICON_PROPS} />} />
-            <span className="text-xs text-ink-faint py-1">
-              {wholesaleFacts[0].v}, {wholesaleFacts[1].v.toLowerCase()}
-            </span>
           </nav>
         </div>
         <div className="flex flex-wrap items-center gap-2 mt-10 pt-6 border-t border-rule text-xs text-ink-faint">

@@ -11,9 +11,9 @@
 -- collections, and products from /admin (requires publicMetadata.role =
 -- "admin" on your Clerk user, set by hand in the Clerk dashboard).
 --
--- This file assumes a fresh database - it creates every table from scratch
--- and will error on any that already exist. After it, run every file in
--- migrations/ in order - this file holds none of their changes.
+-- This file is the whole schema and assumes a fresh database - it creates
+-- every table from scratch and will error on any that already exist. There
+-- are no migrations; to start over, run reset.sql first, then this file.
 
 -- ---- catalog (public read, no public write - only /admin's service-role
 -- client can write) ----
@@ -38,7 +38,11 @@ create table products (
   left_count int not null default 0,
   photo_label text not null,
   image_url text,
+  description text,
   category_slug text references categories(slug) on delete set null,
+  -- Who made the current stock change; read and cleared by
+  -- log_stock_change() below.
+  stock_updated_by text,
   created_at timestamptz not null default now()
 );
 
@@ -49,8 +53,15 @@ create or replace function decrement_product_stock(p_slug text, p_qty int)
 returns void
 language sql
 as $$
-  update products set left_count = greatest(0, left_count - p_qty) where slug = p_slug;
+  update products
+  set left_count = greatest(0, left_count - p_qty), stock_updated_by = 'Checkout'
+  where slug = p_slug;
 $$;
+
+-- Functions in `public` are callable by anon via PostgREST RPC by default -
+-- only the server's service-role client may call this.
+revoke execute on function decrement_product_stock(text, int) from public, anon, authenticated;
+grant execute on function decrement_product_stock(text, int) to service_role;
 
 create table product_images (
   id bigserial primary key,
@@ -74,6 +85,9 @@ create table reviews (
   rating int not null check (rating between 1 and 5),
   comment text not null,
   approved boolean not null default false,
+  avatar_url text,
+  admin_reply text,
+  admin_reply_at timestamptz,
   created_at timestamptz not null default now()
 );
 
@@ -102,9 +116,37 @@ create policy "product_collections are publicly readable" on product_collections
 create policy "approved reviews are publicly readable" on reviews
   for select to anon, authenticated using (approved = true);
 
+-- Reviewer sees their own row even before approval (for the delete UI).
+create policy "users can view their own review" on reviews
+  for select to authenticated using ((select auth.jwt()->>'sub') = user_id);
+
+create policy "users can delete their own review" on reviews
+  for delete to authenticated using ((select auth.jwt()->>'sub') = user_id);
+
+-- Can't self-approve or fake an admin reply.
 create policy "signed-in users can leave a review" on reviews
   for insert to authenticated
-  with check ((select auth.jwt()->>'sub') = user_id);
+  with check (
+    (select auth.jwt()->>'sub') = user_id
+    and approved = false
+    and admin_reply is null
+    and admin_reply_at is null
+    and char_length(comment) <= 2000
+    and char_length(customer_name) <= 100
+  );
+
+-- ---- instagram posts (homepage section, public read, admin-only write) ----
+
+create table instagram_posts (
+  id bigserial primary key,
+  url text not null,
+  created_at timestamptz not null default now()
+);
+
+alter table instagram_posts enable row level security;
+
+create policy "instagram_posts are publicly readable" on instagram_posts
+  for select using (true);
 
 -- ---- site settings (public read, only /admin's service-role client can
 -- write - single row, id always 1) ----
@@ -187,7 +229,7 @@ create policy "users manage their own wishlist" on wishlist_items
 
 create table kiln_signups (
   id bigserial primary key,
-  email text not null unique,
+  email text not null unique check (char_length(email) <= 254),
   created_at timestamptz not null default now()
 );
 
@@ -196,28 +238,9 @@ alter table kiln_signups enable row level security;
 create policy "anyone can sign up" on kiln_signups
   for insert to anon, authenticated with check (true);
 
--- ---- wholesale inquiries (public, write-only - the wholesale page's form
--- inserts directly with the anon key, admin reads via the service-role
--- client at /admin/wholesale) ----
-
-create table wholesale_inquiries (
-  id bigserial primary key,
-  business_name text not null,
-  contact_name text not null,
-  email text not null,
-  quantity_range text not null,
-  message text,
-  created_at timestamptz not null default now()
-);
-
-alter table wholesale_inquiries enable row level security;
-
-create policy "anyone can send a wholesale inquiry" on wholesale_inquiries
-  for insert to anon, authenticated with check (true);
-
 -- ---- orders (checkout writes a real row via Razorpay; the service-role
 -- client in app/checkout/actions.ts and app/admin/orders/** can read/write
--- every row; migrations/005 lets signed-in users read their own) ----
+-- every row; signed-in users can read their own) ----
 
 create table orders (
   id bigserial primary key,
@@ -235,7 +258,7 @@ create table orders (
   discount_amount int not null default 0,
   subtotal int not null,
   total int not null,
-  razorpay_order_id text not null,
+  razorpay_order_id text not null unique, -- one order per Razorpay payment
   razorpay_payment_id text not null,
   created_at timestamptz not null default now()
 );
@@ -251,3 +274,88 @@ create table order_items (
 
 alter table orders enable row level security;
 alter table order_items enable row level security;
+
+create policy "users can view their own orders" on orders
+  for select to authenticated using ((select auth.jwt()->>'sub') = user_id);
+
+create policy "users can view their own order items" on order_items
+  for select to authenticated using ((select auth.jwt()->>'sub') = user_id);
+
+-- ---- saved addresses (/profile) ----
+
+create table addresses (
+  id bigserial primary key,
+  user_id text not null,
+  label text not null default 'Home',
+  first_name text not null,
+  last_name text not null,
+  address text not null,
+  city text not null,
+  state text not null,
+  pin text not null,
+  is_default boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+alter table addresses enable row level security;
+
+create policy "users manage their own addresses" on addresses
+  for all to authenticated
+  using ((select auth.jwt()->>'sub') = user_id)
+  with check ((select auth.jwt()->>'sub') = user_id);
+
+-- ---- staff activity log + stock history (service-role only: RLS on, no
+-- policies) ----
+
+create table staff_logs (
+  id bigserial primary key,
+  actor_id text not null,
+  actor_name text not null,
+  actor_role text not null,
+  section text not null,
+  action text not null,
+  created_at timestamptz not null default now()
+);
+create index staff_logs_created_at_idx on staff_logs (created_at desc);
+alter table staff_logs enable row level security;
+
+-- Every stock change, whatever caused it (inventory page, product edit, new
+-- product, checkout). The trigger catches them all; writers say who they are
+-- by setting products.stock_updated_by in the same update, and the trigger
+-- clears it so the next anonymous writer isn't mislabelled. No FK on
+-- product_slug - history outlives a deleted product.
+create table inventory_history (
+  id bigserial primary key,
+  product_slug text not null,
+  product_name text not null,
+  old_count int,
+  new_count int not null,
+  changed_by text,
+  created_at timestamptz not null default now()
+);
+create index inventory_history_created_at_idx on inventory_history (created_at desc);
+alter table inventory_history enable row level security;
+
+create or replace function log_stock_change()
+returns trigger
+language plpgsql
+as $$
+begin
+  if tg_op = 'INSERT' or new.left_count is distinct from old.left_count then
+    insert into inventory_history (product_slug, product_name, old_count, new_count, changed_by)
+    values (
+      new.slug,
+      new.name,
+      case when tg_op = 'UPDATE' then old.left_count end,
+      new.left_count,
+      new.stock_updated_by
+    );
+  end if;
+  new.stock_updated_by := null;
+  return new;
+end;
+$$;
+
+create trigger products_stock_history
+  before insert or update on products
+  for each row execute function log_stock_change();

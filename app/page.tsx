@@ -1,7 +1,5 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import Image from "next/image";
-import { ArrowRight } from "lucide-react";
 import Hero from "@/components/Hero";
 import KilnNotify from "@/components/KilnNotify";
 import ProductRow from "@/components/ProductRow";
@@ -10,7 +8,6 @@ import ShopByCollection from "@/components/ShopByCollection";
 import InstagramFeed from "@/components/InstagramFeed";
 import Reveal from "@/components/Reveal";
 import ValueCard from "@/components/ValueCard";
-import { wholesaleFacts } from "@/lib/data";
 import {
   getCollection,
   getCategoriesWithProducts,
@@ -123,28 +120,6 @@ export default async function Home() {
             </div>
           </div>
         </div>
-      </section>
-
-      <section className="container-x section-tight">
-        <Reveal className="bg-[var(--ink)] text-paper rounded-3xl p-8 sm:p-12 grid md:grid-cols-[1.3fr_1fr] gap-8 items-center">
-          <div>
-            <span className="kicker text-terracotta-light">Wholesale</span>
-            <h2 className="display-2 mt-2 text-paper">
-              Fitting out a café or a shop?
-            </h2>
-            <p className="mt-2.5 text-[0.95rem] leading-relaxed text-paper/70 max-w-[48ch]">
-              {wholesaleFacts[0].v} per order, {wholesaleFacts[1].v.toLowerCase()}
-              , at {wholesaleFacts[2].v.toLowerCase()}. Your stamp on the base,
-              no charge.
-            </p>
-          </div>
-          <Link
-            href="/wholesale"
-            className="btn bg-paper text-ink justify-self-start md:justify-self-end"
-          >
-            Wholesale terms <ArrowRight size={16} strokeWidth={1.7} aria-hidden />
-          </Link>
-        </Reveal>
       </section>
 
       <section className="container-x section-tight border-t border-rule">

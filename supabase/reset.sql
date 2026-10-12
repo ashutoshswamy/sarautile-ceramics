@@ -1,9 +1,9 @@
--- Sarautile Ceramics - wipe everything schema.sql and migrations/ create.
+-- Sarautile Ceramics - wipe everything schema.sql creates.
 -- Run in the Supabase SQL editor (Dashboard -> SQL Editor -> New query).
 --
 -- DESTRUCTIVE AND IRREVERSIBLE: drops every table and all their data
 -- (products, orders, carts, reviews, ...). Take a backup first if any of it
--- matters. Afterwards, run schema.sql, then migrations/ in order.
+-- matters. Afterwards, run schema.sql.
 --
 -- Dropping a table also drops its policies, indexes, and constraints.
 --
@@ -26,7 +26,6 @@ drop table if exists
   site_settings,
   discount_codes,
   kiln_signups,
-  wholesale_inquiries,
   instagram_posts,
   staff_logs,
   inventory_history
