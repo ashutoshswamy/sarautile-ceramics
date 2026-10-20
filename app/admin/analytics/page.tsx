@@ -6,14 +6,14 @@ const LOW_STOCK_THRESHOLD = 5;
 const TREND_DAYS = 30;
 
 type OrderRow = { id: number; total: number; created_at: string };
-type ItemRow = { product_slug: string; qty: number; unit_price: number };
+type ItemRow = { product_slug: string; qty: number; line_total: number };
 type ProductRow = { slug: string; name: string; left_count: number };
 
 export default async function AdminAnalyticsPage() {
   const supabase = getSupabaseAdmin();
   const [{ data: orders }, { data: items }, { data: products }] = await Promise.all([
     supabase.from("orders").select("id, total, created_at").returns<OrderRow[]>(),
-    supabase.from("order_items").select("product_slug, qty, unit_price").returns<ItemRow[]>(),
+    supabase.from("order_items").select("product_slug, qty, line_total").returns<ItemRow[]>(),
     supabase.from("products").select("slug, name, left_count").returns<ProductRow[]>(),
   ]);
 
@@ -47,7 +47,7 @@ export default async function AdminAnalyticsPage() {
   for (const it of allItems) {
     const cur = productTotals.get(it.product_slug) ?? { qty: 0, revenue: 0 };
     cur.qty += it.qty;
-    cur.revenue += it.qty * it.unit_price;
+    cur.revenue += it.line_total;
     productTotals.set(it.product_slug, cur);
   }
   const topProducts = Array.from(productTotals.entries())

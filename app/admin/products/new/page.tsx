@@ -37,6 +37,14 @@ export default async function AdminNewProductPage() {
           <input name="price" type="number" min={0} required defaultValue={1150} className="field" />
         </label>
         <label className="field-label">
+          Set price (₹, optional)
+          <input name="set_price" type="number" min={0}  placeholder="500" className="field" />
+        </label>
+        <label className="field-label">
+          Items in a set
+          <input name="set_size" type="number" min={2} required defaultValue={6} className="field" />
+        </label>
+        <label className="field-label">
           Weight (optional)
           <input name="weight" placeholder="340 g" className="field" />
         </label>

@@ -29,6 +29,7 @@ type OrderItem = {
   product_slug: string;
   qty: number;
   unit_price: number;
+  line_total: number;
 };
 
 export default async function AdminOrderDetailPage(
@@ -41,7 +42,7 @@ export default async function AdminOrderDetailPage(
     supabase.from("orders").select("*").eq("id", id).returns<Order[]>().single(),
     supabase
       .from("order_items")
-      .select("product_slug, qty, unit_price")
+      .select("product_slug, qty, unit_price, line_total")
       .eq("order_id", id)
       .returns<OrderItem[]>(),
   ]);
@@ -115,7 +116,7 @@ export default async function AdminOrderDetailPage(
               <tr key={i} className="border-t border-rule">
                 <td className="px-4 py-3 text-ink">{item.product_slug}</td>
                 <td className="px-4 py-3 text-ink-soft">×{item.qty}</td>
-                <td className="px-4 py-3 text-ink-soft">₹{item.unit_price * item.qty}</td>
+                <td className="px-4 py-3 text-ink-soft">₹{item.line_total}</td>
               </tr>
             ))}
           </tbody>

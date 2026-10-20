@@ -76,9 +76,9 @@ export async function GET(_req: Request, ctx: RouteContext<"/invoice/[id]">) {
 
   const { data: items } = await supabase
     .from("order_items")
-    .select("product_slug, qty, unit_price")
+    .select("product_slug, qty, unit_price, line_total")
     .eq("order_id", order.id)
-    .returns<{ product_slug: string; qty: number; unit_price: number }[]>();
+    .returns<{ product_slug: string; qty: number; unit_price: number; line_total: number }[]>();
   const { data: products } = await supabase
     .from("products")
     .select("slug, name")
@@ -143,7 +143,7 @@ export async function GET(_req: Request, ctx: RouteContext<"/invoice/[id]">) {
               <Text style={[s.td, s.item]}>{nameBySlug.get(item.product_slug) ?? item.product_slug}</Text>
               <Text style={[s.td, s.num]}>{item.qty}</Text>
               <Text style={[s.td, s.num]}>{rupees(item.unit_price)}</Text>
-              <Text style={[s.td, s.num]}>{rupees(item.unit_price * item.qty)}</Text>
+              <Text style={[s.td, s.num]}>{rupees(item.line_total)}</Text>
             </View>
           ))}
         </View>

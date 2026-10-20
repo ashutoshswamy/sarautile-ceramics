@@ -22,6 +22,7 @@ type OrderItemRow = {
   product_slug: string;
   qty: number;
   unit_price: number;
+  line_total: number;
 };
 
 type AddressRow = {
@@ -93,7 +94,7 @@ function OrdersTab({
                 <span>
                   {item.product_slug} ×{item.qty}
                 </span>
-                <span className="ml-auto">₹{item.unit_price * item.qty}</span>
+                <span className="ml-auto">₹{item.line_total}</span>
               </div>
             ))}
           </div>
@@ -315,7 +316,7 @@ export default function ProfilePage() {
       if (orderIds.length > 0) {
         const { data: itemRows } = await supabase
           .from("order_items")
-          .select("order_id, product_slug, qty, unit_price")
+          .select("order_id, product_slug, qty, unit_price, line_total")
           .in("order_id", orderIds)
           .returns<OrderItemRow[]>();
         for (const item of itemRows ?? []) {

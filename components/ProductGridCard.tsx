@@ -56,6 +56,7 @@ export default function ProductGridCard({ product }: { product: Product }) {
           {product.name}
         </Link>
         <span className="font-medium text-ink">₹{product.price}</span>
+        {product.stock < 1 && <span className="text-xs text-ink-faint">Out of stock</span>}
       </div>
     </div>
   );

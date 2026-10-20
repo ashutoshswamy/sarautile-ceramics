@@ -58,8 +58,11 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
           slug: p.slug,
           name: p.name,
           price: p.price,
+          setPrice: p.set_price,
+          setSize: p.set_size,
           weight: p.weight,
           left: `${p.left_count} left`,
+          stock: p.left_count,
           photoLabel: p.photo_label,
           imageUrl: p.image_url,
           images: (imageRows ?? [])

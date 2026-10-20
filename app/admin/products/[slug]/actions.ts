@@ -78,6 +78,8 @@ export async function updateProduct(slug: string, formData: FormData) {
       .update({
         name: formData.get("name"),
         price: Number(formData.get("price")),
+        set_price: formData.get("set_price") ? Number(formData.get("set_price")) : null,
+        set_size: Number(formData.get("set_size")) || 6,
         weight: formData.get("weight") || null,
         left_count: Number(formData.get("left_count")),
         stock_updated_by: label,
@@ -125,6 +127,8 @@ export async function createProduct(formData: FormData) {
       slug,
       name: formData.get("name"),
       price: Number(formData.get("price")),
+      set_price: formData.get("set_price") ? Number(formData.get("set_price")) : null,
+      set_size: Number(formData.get("set_size")) || 6,
       weight: formData.get("weight") || null,
       left_count: Number(formData.get("left_count")),
       stock_updated_by: label,

@@ -2,6 +2,7 @@
 
 import { currentUser } from "@clerk/nextjs/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { linePrice } from "@/lib/cart";
 import {
   createRazorpayOrder,
   fetchRazorpayOrder,
@@ -35,19 +36,28 @@ async function priceCart(
 
   const { data: products, error } = await supabase
     .from("products")
-    .select("slug, price")
+    .select("slug, name, price, set_price, set_size, left_count")
     .in(
       "slug",
       items.map((i) => i.slug)
     );
   if (error) throw new Error(error.message);
-  const priceBySlug = new Map((products ?? []).map((p) => [p.slug, p.price]));
+  const priceBySlug = new Map((products ?? []).map((p) => [p.slug, p]));
 
   const lines = items.map((item) => {
-    const price = priceBySlug.get(item.slug);
-    if (price == null) throw new Error(`"${item.slug}" is no longer available.`);
+    const product = priceBySlug.get(item.slug);
+    if (!product) throw new Error(`"${item.slug}" is no longer available.`);
     const qty = Math.min(9, Math.max(1, Math.round(Number(item.qty)) || 1));
-    return { slug: item.slug, qty, unitPrice: price, lineTotal: price * qty };
+    if (product.left_count < 1) throw new Error(`"${product.name}" is out of stock.`);
+    if (qty > product.left_count) {
+      throw new Error(`Only ${product.left_count} of "${product.name}" left.`);
+    }
+    return {
+      slug: item.slug,
+      qty,
+      unitPrice: product.price,
+      lineTotal: linePrice(product.price, product.set_price, product.set_size, qty),
+    };
   });
   const subtotal = lines.reduce((sum, l) => sum + l.lineTotal, 0);
 
@@ -183,6 +193,7 @@ export async function placeOrder(input: PlaceOrderInput) {
       product_slug: line.slug,
       qty: line.qty,
       unit_price: line.unitPrice,
+      line_total: line.lineTotal,
     }))
   );
   if (itemsErr) throw new Error("Couldn't place the order - try again in a moment.");

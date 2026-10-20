@@ -34,6 +34,8 @@ create table products (
   slug text primary key,
   name text not null,
   price int not null,
+  set_price int, -- price for every full set_size items (lib/cart.ts linePrice); null = no set deal
+  set_size int not null default 6,
   weight text,
   left_count int not null default 0,
   photo_label text not null,
@@ -269,7 +271,8 @@ create table order_items (
   user_id text not null,
   product_slug text not null,
   qty int not null,
-  unit_price int not null
+  unit_price int not null,
+  line_total int not null -- what was charged for the line (set deals make it != unit_price * qty)
 );
 
 alter table orders enable row level security;

@@ -6,6 +6,7 @@ import ProductGallery from "@/components/ProductGallery";
 import { useCart } from "@/components/CartContext";
 import { useWishlist } from "@/components/WishlistContext";
 import { gsap, useGSAP, useHoverTween } from "@/lib/gsap";
+import { linePrice } from "@/lib/cart";
 import type { Product } from "@/lib/data";
 
 const SPEC_ICON: Record<string, typeof Layers> = {
@@ -17,7 +18,9 @@ const SPEC_ICON: Record<string, typeof Layers> = {
 export default function ProductDetail({ product }: { product: Product }) {
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
-  const lineTotal = product.price * qty;
+  const soldOut = product.stock < 1;
+  const lineTotal = linePrice(product.price, product.setPrice, product.setSize, qty);
+  const setSaving = product.setPrice ? product.price * product.setSize - product.setPrice : 0;
 
   const { add, setOpen } = useCart();
   const { has, toggle } = useWishlist();
@@ -46,6 +49,7 @@ export default function ProductDetail({ product }: { product: Product }) {
   );
 
   function addToCart() {
+    if (soldOut) return;
     add(product.slug, qty);
     setAdded(true);
     setOpen(true);
@@ -86,6 +90,15 @@ export default function ProductDetail({ product }: { product: Product }) {
             {product.left}
           </span>
         </div>
+        {setSaving > 0 && product.stock >= product.setSize && (
+          <button
+            type="button"
+            onClick={() => setQty(product.setSize)}
+            className="mt-3 cursor-pointer rounded-full bg-sage-bg px-3 py-1.5 text-xs font-medium text-sage-ink"
+          >
+            Set of {product.setSize} for ₹{product.setPrice} — save ₹{setSaving}
+          </button>
+        )}
         <p className="lede text-[0.95rem] mt-5">
           {product.description ||
             "A proper everyday piece: heavy enough to feel like something, light enough to handle with ease. Every curve is finished by hand, so it fits a hand."}
@@ -102,20 +115,24 @@ export default function ProductDetail({ product }: { product: Product }) {
             </button>
             <span className="text-base min-w-[14px] text-center">{qty}</span>
             <button
-              onClick={() => setQty((q) => Math.min(9, q + 1))}
+              onClick={() => setQty((q) => Math.min(9, product.stock, q + 1))}
               className="cursor-pointer text-lg text-ink-soft leading-none hover:text-ink px-1"
               aria-label="Increase quantity"
             >
               +
             </button>
           </div>
-          <button onClick={addToCart} className="btn btn-primary flex-1">
+          <button
+            onClick={addToCart}
+            disabled={soldOut}
+            className="btn btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             {added ? (
               <Check size={16} strokeWidth={2} aria-hidden />
             ) : (
               <ShoppingBag size={16} strokeWidth={1.8} aria-hidden />
             )}
-            {added ? "Added" : `Add to cart — ₹${lineTotal}`}
+            {soldOut ? "Out of stock" : added ? "Added" : `Add to cart — ₹${lineTotal}`}
           </button>
         </div>
         <div className="flex flex-col border-t border-rule mt-8 empty:hidden">

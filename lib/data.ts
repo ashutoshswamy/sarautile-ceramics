@@ -6,8 +6,11 @@ export type Product = {
   slug: string;
   name: string;
   price: number;
+  setPrice: number | null;
+  setSize: number;
   weight: string | null;
   left: string;
+  stock: number;
   photoLabel: string;
   imageUrl: string | null;
   images: string[];

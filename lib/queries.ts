@@ -13,6 +13,8 @@ type ProductRow = {
   slug: string;
   name: string;
   price: number;
+  set_price: number | null;
+  set_size: number;
   weight: string | null;
   left_count: number;
   photo_label: string;
@@ -32,8 +34,11 @@ function assemble(productRows: ProductRow[], imageRows: ProductImageRow[]): Prod
     slug: p.slug,
     name: p.name,
     price: p.price,
+    setPrice: p.set_price,
+    setSize: p.set_size,
     weight: p.weight,
     left: `${p.left_count} left`,
+    stock: p.left_count,
     photoLabel: p.photo_label,
     imageUrl: p.image_url,
     images: imageRows

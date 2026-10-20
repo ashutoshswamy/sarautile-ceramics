@@ -47,8 +47,12 @@ export default function ProductCard({
           {product.name}
         </Link>
         <span className="font-medium text-ink">₹{product.price}</span>
-        <button onClick={handleAdd} className="btn bg-ink text-paper w-full">
-          Add to cart
+        <button
+          onClick={handleAdd}
+          disabled={product.stock < 1}
+          className="btn bg-ink text-paper w-full disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {product.stock < 1 ? "Out of stock" : "Add to cart"}
         </button>
       </div>
     </div>
