@@ -16,10 +16,10 @@ const SPEC_ICON: Record<string, typeof Layers> = {
 };
 
 export default function ProductDetail({ product }: { product: Product }) {
-  const [qty, setQty] = useState(1);
-  const [added, setAdded] = useState(false);
   const soldOut = product.stock < 1;
-  const lineTotal = linePrice(product.price, product.setPrice, product.setSize, qty);
+  const [qty, setQty] = useState(soldOut ? 0 : 1);
+  const [added, setAdded] = useState(false);
+  const lineTotal = linePrice(product.price, product.setPrice, product.setSize, Math.max(qty, 1));
   const setSaving = product.setPrice ? product.price * product.setSize - product.setPrice : 0;
 
   const { add, setOpen } = useCart();
@@ -65,7 +65,7 @@ export default function ProductDetail({ product }: { product: Product }) {
         srcs={[product.imageUrl, ...product.images].filter(Boolean)}
       />
 
-      <div>
+      <div className="lg:sticky lg:top-28 lg:self-start">
         <div className="flex items-start gap-3">
           <h1 className="display-2">{product.name}</h1>
           <button
@@ -86,8 +86,16 @@ export default function ProductDetail({ product }: { product: Product }) {
         </div>
         <div className="flex items-center gap-3 mt-3">
           <span className="text-3xl font-medium tracking-tight">₹{product.price}</span>
-          <span className="rounded-full bg-warn-bg px-2.5 py-1 text-xs font-medium text-warn-ink">
-            {product.left}
+          <span
+            className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+              soldOut
+                ? "bg-neutral-bg text-neutral-ink"
+                : product.stock <= 3
+                  ? "bg-warn-bg text-warn-ink"
+                  : "bg-sage-bg text-sage-ink"
+            }`}
+          >
+            {soldOut ? "Sold out" : product.stock <= 3 ? product.left : "In stock"}
           </span>
         </div>
         {setSaving > 0 && product.stock >= product.setSize && (
@@ -96,7 +104,7 @@ export default function ProductDetail({ product }: { product: Product }) {
             onClick={() => setQty(product.setSize)}
             className="mt-3 cursor-pointer rounded-full bg-sage-bg px-3 py-1.5 text-xs font-medium text-sage-ink"
           >
-            Set of {product.setSize} for ₹{product.setPrice} — save ₹{setSaving}
+            Set of {product.setSize} for ₹{product.setPrice}, save ₹{setSaving}
           </button>
         )}
         <p className="lede text-[0.95rem] mt-5">
@@ -105,18 +113,26 @@ export default function ProductDetail({ product }: { product: Product }) {
         </p>
 
         <div className="flex flex-col min-[420px]:flex-row gap-3 mt-8 items-stretch min-[420px]:items-center">
-          <div className="flex items-center justify-between min-[420px]:justify-start gap-3.5 border border-rule-strong rounded-full px-4 py-2.5">
+          <div
+            className={`flex items-center justify-between min-[420px]:justify-start gap-1 border border-rule-strong rounded-full p-1 ${
+              soldOut ? "opacity-50" : "bg-paper-tint"
+            }`}
+          >
             <button
               onClick={() => setQty((q) => Math.max(1, q - 1))}
-              className="cursor-pointer text-lg text-ink-soft leading-none hover:text-ink px-1"
+              disabled={soldOut || qty <= 1}
+              className="grid h-9 w-9 place-items-center rounded-full text-lg leading-none text-ink-soft transition-colors enabled:cursor-pointer enabled:hover:bg-canvas enabled:hover:text-ink disabled:opacity-40"
               aria-label="Decrease quantity"
             >
               -
             </button>
-            <span className="text-base min-w-[14px] text-center">{qty}</span>
+            <span className="min-w-8 text-center text-base tabular-nums" aria-live="polite">
+              {qty}
+            </span>
             <button
               onClick={() => setQty((q) => Math.min(9, product.stock, q + 1))}
-              className="cursor-pointer text-lg text-ink-soft leading-none hover:text-ink px-1"
+              disabled={soldOut || qty >= Math.min(9, product.stock)}
+              className="grid h-9 w-9 place-items-center rounded-full text-lg leading-none text-ink-soft transition-colors enabled:cursor-pointer enabled:hover:bg-canvas enabled:hover:text-ink disabled:opacity-40"
               aria-label="Increase quantity"
             >
               +
@@ -132,16 +148,16 @@ export default function ProductDetail({ product }: { product: Product }) {
             ) : (
               <ShoppingBag size={16} strokeWidth={1.8} aria-hidden />
             )}
-            {soldOut ? "Out of stock" : added ? "Added" : `Add to cart — ₹${lineTotal}`}
+            {soldOut ? "Out of stock" : added ? "Added" : `Add to cart, ₹${lineTotal}`}
           </button>
         </div>
-        <div className="flex flex-col border-t border-rule mt-8 empty:hidden">
+        <div className="mt-8 flex flex-col rounded-2xl bg-canvas px-5 py-1 empty:hidden">
           {specs.map((s) => {
             const SpecIcon = SPEC_ICON[s.k];
             return (
               <div
                 key={s.k}
-                className="flex gap-4 py-3.5 border-b border-rule text-sm"
+                className="flex gap-4 py-3.5 text-sm"
               >
                 <span className="flex w-[120px] flex-none items-center gap-2 text-ink-faint">
                   {SpecIcon && <SpecIcon size={14} strokeWidth={1.7} aria-hidden />}

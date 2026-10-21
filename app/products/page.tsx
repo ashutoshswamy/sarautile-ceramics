@@ -43,7 +43,7 @@ export default async function ProductsPage(props: PageProps<"/products">) {
 
   return (
     <div className="container-x section-tight grid gap-10 md:grid-cols-[236px_1fr] lg:gap-14">
-      <aside className="flex flex-col gap-8 md:sticky md:top-20 md:self-start">
+      <aside className="flex flex-col gap-8 md:sticky md:top-28 md:self-start">
         <div>
           <h1 className="display-2">
             {query ? `Results for "${query}"` : (activeCategory?.name ?? "All the ceramics")}

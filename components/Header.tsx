@@ -243,14 +243,14 @@ export default function Header() {
 
   return (
     <header className="site-header">
-      <div className="container-x flex items-center gap-4 sm:gap-6 h-20 sm:h-24">
+      <div className="container-x flex items-center gap-4 sm:gap-6 h-16 sm:h-[4.5rem]">
         <Link
           href="/"
           aria-label="Sara Utile Ceramics - home"
           className="site-logo mr-auto shrink-0 flex items-center gap-2 text-[1.05rem] sm:text-lg font-medium tracking-tight text-ink no-underline"
           {...hoverHandlers({ opacity: 0.7 }, { opacity: 1 })}
         >
-          <Image src="/logo-nobg.png" alt="" width={240} height={80} priority className="h-16 w-auto sm:h-20" />
+          <Image src="/logo-nobg.png" alt="" width={240} height={80} priority className="h-12 w-auto sm:h-14" />
         </Link>
 
         <nav className="hidden sm:flex items-center gap-7">
@@ -340,8 +340,7 @@ export default function Header() {
         style={{
           height: 0,
           opacity: 0,
-          borderTop: menuOpen ? "1px solid var(--rule)" : "none",
-        }}
+                  }}
       >
         <div className="container-x flex flex-col py-2">
           <form

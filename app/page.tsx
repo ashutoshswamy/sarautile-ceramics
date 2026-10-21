@@ -8,7 +8,6 @@ import ShopByCategory from "@/components/ShopByCategory";
 import ShopByCollection from "@/components/ShopByCollection";
 import InstagramFeed from "@/components/InstagramFeed";
 import Reveal from "@/components/Reveal";
-import ValueCard from "@/components/ValueCard";
 import {
   getCollection,
   getProducts,
@@ -24,27 +23,40 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { alternates: { canonical: "/" } };
 
+// Grid placement per step: wide + narrow on the first row, full-width last.
 const VALUES = [
   {
     image: "/step1.png",
+    stage: "Glaze",
     title: "We mix the glazes",
     body: "Five recipes, ground in a bucket out back. Ember is the one everyone comes for.",
+    tile: "bg-neutral-bg md:col-span-7",
     ink: "text-neutral-ink",
-    tilt: "-rotate-3",
+    pill: "bg-neutral-ink/10 text-neutral-ink",
+    tilt: "-rotate-3 group-hover:-rotate-1",
+    layout: "md:flex-row",
   },
   {
     image: "/step2.png",
+    stage: "Kiln",
     title: "One firing a fortnight",
     body: "The kiln takes what it takes. Sign up and we'll nudge you when the door opens.",
+    tile: "bg-gold-bg md:col-span-5 md:mt-14",
     ink: "text-gold-ink",
-    tilt: "rotate-2",
+    pill: "bg-gold-ink/10 text-gold-ink",
+    tilt: "rotate-2 group-hover:rotate-0",
+    layout: "flex-col",
   },
   {
     image: "/step3.png",
+    stage: "Home",
     title: "Made to be used",
     body: "Chip it, stain it, love it. And if it arrives broken we'll throw you another.",
+    tile: "bg-sage-bg md:col-span-12",
     ink: "text-sage-ink",
-    tilt: "-rotate-2",
+    pill: "bg-sage-ink/10 text-sage-ink",
+    tilt: "-rotate-2 group-hover:rotate-0",
+    layout: "md:flex-row-reverse",
   },
 ];
 
@@ -80,56 +92,40 @@ export default async function Home() {
 
       <section className="bg-sand border-y border-rule">
         <div className="container-x section">
-          <div className="mb-10 max-w-xl">
-            <span className="kicker">Behind the scenes</span>
-            <h2 className="display-2 mt-2">How we work</h2>
-            <p className="lede text-[0.95rem] mt-2.5">
-              Same three steps, every single batch — mixed, fired, and sent off to get used.
-            </p>
-          </div>
-          <div className="relative">
-            <div
-              aria-hidden
-              className="hidden md:block absolute left-1/2 -translate-x-1/2 inset-y-0 -z-10 border-l-2 border-dashed border-rule-strong/50"
-            />
-            <div className="space-y-16 md:space-y-24">
-              {VALUES.map((value, i) => {
-                const reversed = i % 2 === 1;
-                return (
-                  <ValueCard key={value.title}>
-                    <div className="relative grid md:grid-cols-2 gap-8 md:gap-16 items-center">
-                      <div className={`grid place-items-center ${reversed ? "md:order-2" : ""}`}>
-                        <Image
-                          src={value.image}
-                          alt=""
-                          width={420}
-                          height={420}
-                          className={`w-72 h-72 md:w-96 md:h-96 object-contain ${value.tilt}`}
-                        />
-                      </div>
-                      <div className={reversed ? "md:order-1 md:text-right" : ""}>
-                        <span
-                          className={`block text-[0.6875rem] font-semibold tracking-[0.15em] uppercase ${value.ink}`}
-                        >
-                          Step 0{i + 1}
-                        </span>
-                        <h3 className="display-2 mt-2">{value.title}</h3>
-                        <p className={`lede text-[0.95rem] mt-3 max-w-md ${reversed ? "md:ml-auto" : ""}`}>
-                          {value.body}
-                        </p>
-                      </div>
-                      <span
-                        aria-hidden
-                        className={`hidden md:grid absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 place-items-center w-11 h-11 rounded-full border border-rule bg-paper ring-8 ring-sand text-[0.75rem] font-semibold ${value.ink}`}
-                      >
-                        0{i + 1}
-                      </span>
-                    </div>
-                  </ValueCard>
-                );
-              })}
-            </div>
-          </div>
+          <h2 className="font-display max-w-[14ch] text-[clamp(2.5rem,6vw,4.75rem)] font-semibold leading-[0.98] tracking-[-0.04em] text-ink">
+            How a mug gets made
+          </h2>
+          <p className="mt-5 max-w-md text-[1.0625rem] leading-relaxed text-ink-soft">
+            Every batch goes the same way: mixed, fired, then sent off to get used.
+          </p>
+          <ol className="mt-12 grid gap-5 md:grid-cols-12 md:gap-6">
+            {VALUES.map((value) => (
+              <Reveal as="li" key={value.title} className={`group list-none ${value.tile} rounded-3xl shadow-card`}>
+                <div className={`flex h-full flex-col items-center gap-8 p-7 sm:p-12 ${value.layout}`}>
+                  <div className="relative grid flex-none place-items-center">
+                    <span aria-hidden className="absolute inset-[-8%] rounded-full bg-paper/60" />
+                    <Image
+                      src={value.image}
+                      alt=""
+                      width={420}
+                      height={350}
+                      sizes="(min-width: 768px) 320px, 70vw"
+                      className={`relative h-auto w-56 object-contain transition-transform duration-500 ease-out motion-reduce:transition-none md:w-72 ${value.tilt}`}
+                    />
+                  </div>
+                  <div className="md:max-w-sm">
+                    <span className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${value.pill}`}>
+                      {value.stage}
+                    </span>
+                    <h3 className={`font-display mt-4 text-[clamp(1.875rem,3.4vw,3rem)] font-semibold leading-[1.02] tracking-[-0.035em] ${value.ink}`}>
+                      {value.title}
+                    </h3>
+                    <p className="mt-4 text-[1.0625rem] leading-relaxed text-ink-soft">{value.body}</p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </ol>
         </div>
       </section>
 

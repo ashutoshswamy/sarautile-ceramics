@@ -62,7 +62,7 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative w-full min-h-[480px] max-h-[900px] overflow-hidden bg-sand">
+    <section className="relative -mt-[4.75rem] pt-[4.75rem] sm:-mt-[5.25rem] sm:pt-[5.25rem] w-full min-h-[480px] max-h-[900px] overflow-hidden bg-sand">
       {!videoDone && (
         <div ref={videoWrapRef} className="fixed inset-0 z-[100] bg-ink origin-right">
           <video
@@ -87,7 +87,7 @@ export default function Hero() {
 
       <div className="mx-auto max-w-6xl px-6 md:px-10 py-16 md:py-24 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
         <div ref={textRef} className="invisible order-2 md:order-1">
-          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-medium tracking-tight text-ink">
+          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-ink">
             Shaped by hand,
             <br />
             fired with care.

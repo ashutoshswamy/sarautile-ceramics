@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
-import { DM_Sans } from "next/font/google";
+import { DM_Sans, Bricolage_Grotesque } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { WishlistProvider } from "@/components/WishlistContext";
@@ -19,6 +19,13 @@ const dmSans = DM_Sans({
   weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
   variable: "--font-dm-sans",
+  display: "swap",
+});
+
+// Display face for headings; DM Sans stays as the body face.
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-bricolage",
   display: "swap",
 });
 
@@ -81,7 +88,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         },
       }}
     >
-      <html lang="en" className={`${dmSans.variable} font-sans`}>
+      <html lang="en" className={`${dmSans.variable} ${bricolage.variable} font-sans`}>
         <body className="min-h-screen flex flex-col bg-paper text-ink antialiased">
           <script
             type="application/ld+json"
