@@ -15,8 +15,8 @@ const STUDIO_LINKS = [
   { href: "/story", label: "Our story", icon: <BookOpen {...ICON_PROPS} /> },
   { href: "/care", label: "Care", icon: <Droplets {...ICON_PROPS} /> },
   {
-    href: "mailto:hello@sarautileceramics.in",
-    label: "hello@sarautileceramics.in",
+    href: "mailto:team@sarautileceramics.in",
+    label: "team@sarautileceramics.in",
     icon: <Mail {...ICON_PROPS} />,
   },
 ];

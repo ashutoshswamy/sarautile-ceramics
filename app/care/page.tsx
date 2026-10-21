@@ -56,8 +56,8 @@ export default function CarePage() {
         </h4>
         <p className="text-sm leading-relaxed text-ink-soft mt-2">
           Email a photo to{" "}
-          <a href="mailto:hello@sarautileceramics.in">
-            hello@sarautileceramics.in
+          <a href="mailto:team@sarautileceramics.in">
+            team@sarautileceramics.in
           </a>{" "}
           and we&apos;ll sort it. Usually that means a new piece in the post.
         </p>
