@@ -254,6 +254,7 @@ create table orders (
   city text not null,
   state text not null,
   pin text not null,
+  phone text, -- for Shiprocket CSV export; null on orders placed before it was collected (alter table orders add column phone text;)
   status text not null default 'pending'
     check (status in ('pending', 'processing', 'shipped', 'delivered', 'cancelled')),
   discount_code text,

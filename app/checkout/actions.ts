@@ -114,6 +114,7 @@ export type PlaceOrderInput = {
     city: string;
     state: string;
     pin: string;
+    phone: string;
   };
   items: { slug: string; qty: number }[];
   discountCode: string | null;
@@ -175,6 +176,7 @@ export async function placeOrder(input: PlaceOrderInput) {
       city: shipping.city,
       state: shipping.state,
       pin: shipping.pin,
+      phone: shipping.phone,
       subtotal,
       discount_code: appliedCode,
       discount_amount: discountAmount,
@@ -223,10 +225,12 @@ function cleanShipping(s: PlaceOrderInput["shipping"]) {
     city: field(s?.city, 100),
     state: field(s?.state, 100),
     pin: field(s?.pin, 10),
+    phone: field(s?.phone, 15).replace(/^(\+91|0)/, "").replace(/[\s-]/g, ""),
   };
   if (Object.values(out).some((v) => !v)) throw new Error("Fill in every shipping field.");
   if (!/^\S+@\S+\.\S+$/.test(out.email)) throw new Error("Enter a valid email.");
   if (!/^\d{6}$/.test(out.pin)) throw new Error("Enter a valid 6-digit PIN code.");
+  if (!/^[6-9]\d{9}$/.test(out.phone)) throw new Error("Enter a valid 10-digit mobile number.");
   return out;
 }
 

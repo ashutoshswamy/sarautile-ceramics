@@ -84,6 +84,7 @@ export default function CheckoutPage() {
       city: String(data.get("city")),
       state: String(data.get("state")),
       pin: String(data.get("pin")),
+      phone: String(data.get("phone")),
     };
 
     const cartItems = items.map((item) => ({ slug: item.slug, qty: item.qty }));
@@ -243,6 +244,10 @@ export default function CheckoutPage() {
             <label className="field-label">
               State
               <input name="state" required defaultValue={picked?.state} className="field" />
+            </label>
+            <label className="field-label col-span-2">
+              Mobile number
+              <input name="phone" type="tel" required inputMode="numeric" autoComplete="tel" title="10-digit mobile number" className="field" />
             </label>
             <label className="field-label col-span-2">
               PIN code

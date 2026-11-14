@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight, FileText } from "lucide-react";
+import { ChevronRight, Download, FileText } from "lucide-react";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 type OrderRow = {
@@ -47,6 +47,9 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
     <div>
       <h1 className="display-2">Orders</h1>
       <p className="lede text-[0.95rem] mt-2">{data?.length ?? 0} placed.</p>
+      <a href="/admin/orders/export" download className="link-arrow inline-flex mt-3">
+        <Download size={14} strokeWidth={1.8} aria-hidden /> Shiprocket CSV (pending + processing)
+      </a>
 
       <div className="flex flex-wrap items-center gap-3 mt-6">
         <form className="flex-1 min-w-[200px]">
