@@ -102,7 +102,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                     <ToastFromQuery />
                   </Suspense>
                   <Loader />
-                  <Header />
+                  <SiteFooter>
+                    <Header />
+                  </SiteFooter>
                   <main className="flex-1">{children}</main>
                   <SiteFooter>
                     <Footer />

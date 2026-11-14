@@ -15,7 +15,6 @@ export const SECTIONS = {
   reviews: "Reviews",
   "kiln-signups": "Kiln signups",
   instagram: "Instagram",
-  settings: "Settings",
 } as const;
 
 export type Section = keyof typeof SECTIONS | "staff" | "activity";

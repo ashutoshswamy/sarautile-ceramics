@@ -60,3 +60,18 @@ export function verifyRazorpaySignature(
   const b = Buffer.from(String(signature));
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
+
+/** Full refund of a captured payment back to the original method. */
+export async function refundRazorpayPayment(paymentId: string, amountInPaise: number) {
+  const res = await fetch(
+    `https://api.razorpay.com/v1/payments/${encodeURIComponent(paymentId)}/refund`,
+    {
+      method: "POST",
+      headers: { Authorization: authHeader(), "Content-Type": "application/json" },
+      body: JSON.stringify({ amount: amountInPaise, speed: "normal" }),
+    }
+  );
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error?.description ?? "Refund failed.");
+  return data as { id: string };
+}

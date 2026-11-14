@@ -1,5 +1,6 @@
 import { requireSection } from "@/lib/adminAuth";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { filterFromRequest, kg } from "@/lib/pdf/orders";
 
 // ponytail: no Shiprocket API hookup - admin downloads this CSV and uploads it
 // in Shiprocket's bulk order import. HEADERS is the exact header row of
@@ -63,15 +64,6 @@ const HEADERS = [
   "Advance AWB"
 ];
 const PKG_CM = [20, 20, 15];
-const DEFAULT_KG = 0.5;
-
-// "450g" / "1.2 kg" -> kg; anything unparseable -> DEFAULT_KG
-function kg(text: string | null) {
-  const m = text?.match(/([\d.]+)\s*(kg|g)?/i);
-  if (!m) return DEFAULT_KG;
-  const n = parseFloat(m[1]);
-  return m[2]?.toLowerCase() === "kg" ? n : n / 1000 || DEFAULT_KG;
-}
 
 // quotes + neutralises spreadsheet formulas in customer-typed text
 const cell = (v: string | number) => {
@@ -79,15 +71,19 @@ const cell = (v: string | number) => {
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 
-export async function GET() {
+export async function GET(req: Request) {
   await requireSection("orders");
   const supabase = getSupabaseAdmin();
 
-  const { data: orders } = await supabase
+  // ?id=1&id=2 for chosen orders; no ids = every pending/processing order.
+  const filter = filterFromRequest(req);
+  const base = supabase
     .from("orders")
-    .select("id, first_name, last_name, email, address, city, state, pin, phone, discount_amount, created_at")
-    .in("status", ["pending", "processing"])
-    .order("id");
+    .select("id, first_name, last_name, email, address, city, state, pin, phone, discount_amount, created_at");
+  const { data: orders } = await ("ids" in filter
+    ? base.in("id", filter.ids)
+    : base.in("status", filter.statuses)
+  ).order("id");
   const { data: items } = await supabase
     .from("order_items")
     .select("order_id, product_slug, qty, line_total")

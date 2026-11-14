@@ -3,9 +3,11 @@ import { notFound } from "next/navigation";
 import { ChevronRight, FileText } from "lucide-react";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import SubmitButton from "@/components/admin/SubmitButton";
-import { updateOrderStatus } from "../actions";
+import ConfirmSubmitButton from "@/components/admin/ConfirmSubmitButton";
+import { cancelOrderAction, updateOrderStatus } from "../actions";
 
-const STATUSES = ["pending", "processing", "shipped", "delivered", "cancelled"] as const;
+// "cancelled" is its own button below (it refunds + restocks).
+const STATUSES = ["pending", "processing", "shipped", "delivered"] as const;
 
 type Order = {
   id: number;
@@ -22,6 +24,7 @@ type Order = {
   subtotal: number;
   total: number;
   razorpay_payment_id: string;
+  refund_id: string | null;
   created_at: string;
 };
 
@@ -66,19 +69,34 @@ export default async function AdminOrderDetailPage(
         {new Date(order.created_at).toLocaleString()}
       </p>
 
-      <form
-        action={updateOrderStatus.bind(null, order.id)}
-        className="flex items-center gap-3 mt-5"
-      >
-        <select name="status" defaultValue={order.status} className="field w-auto">
-          {STATUSES.map((s) => (
-            <option key={s} value={s} className="capitalize">
-              {s}
-            </option>
-          ))}
-        </select>
-        <SubmitButton>Update status</SubmitButton>
-      </form>
+      {order.status !== "cancelled" && (
+        <form
+          action={updateOrderStatus.bind(null, order.id)}
+          className="flex items-center gap-3 mt-5"
+        >
+          <select name="status" defaultValue={order.status} className="field w-auto">
+            {STATUSES.map((s) => (
+              <option key={s} value={s} className="capitalize">
+                {s}
+              </option>
+            ))}
+          </select>
+          <SubmitButton>Update status</SubmitButton>
+        </form>
+      )}
+      {(order.status === "pending" || order.status === "processing") && (
+        <form action={cancelOrderAction.bind(null, order.id)} className="mt-3">
+          <ConfirmSubmitButton
+            confirmTitle={`Cancel order #${order.id}?`}
+            confirmBody={`Refunds ₹${order.total} to the customer's original payment method and puts the items back in stock. This can't be undone.`}
+            confirmLabel="Cancel & refund"
+            pendingLabel="Refunding…"
+            className="text-sm text-warn-ink underline underline-offset-2"
+          >
+            Cancel order &amp; refund
+          </ConfirmSubmitButton>
+        </form>
+      )}
 
       <div className="grid sm:grid-cols-2 gap-8 mt-8">
         <div>
@@ -96,6 +114,11 @@ export default async function AdminOrderDetailPage(
         <div>
           <span className="kicker">Payment</span>
           <p className="text-sm text-ink mt-2 font-mono text-xs">{order.razorpay_payment_id}</p>
+          {order.refund_id && (
+            <p className="text-xs text-ink-faint mt-1">
+              Refunded · <span className="font-mono">{order.refund_id}</span>
+            </p>
+          )}
           <a href={`/invoice/${order.id}`} download className="link-arrow inline-flex mt-3 text-sm">
             <FileText size={14} strokeWidth={1.8} aria-hidden /> Download invoice
           </a>

@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { ChevronRight, Download, FileText } from "lucide-react";
+import { ChevronRight, Download, FileText, Printer, Truck } from "lucide-react";
+import { markShipped } from "./actions";
+import SelectAll from "@/components/admin/SelectAll";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 type OrderRow = {
@@ -34,7 +36,9 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
     .returns<OrderRow[]>();
 
   let orders = data ?? [];
-  if (status) orders = orders.filter((o) => o.status === status);
+  // Default view is the to-ship queue; shipped orders drop out of it.
+  if (status === "") orders = orders.filter((o) => o.status === "pending" || o.status === "processing");
+  else if (status !== "all") orders = orders.filter((o) => o.status === status);
   if (query) {
     orders = orders.filter(
       (o) =>
@@ -47,9 +51,6 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
     <div>
       <h1 className="display-2">Orders</h1>
       <p className="lede text-[0.95rem] mt-2">{data?.length ?? 0} placed.</p>
-      <a href="/admin/orders/export" download className="link-arrow inline-flex mt-3">
-        <Download size={14} strokeWidth={1.8} aria-hidden /> Shiprocket CSV (pending + processing)
-      </a>
 
       <div className="flex flex-wrap items-center gap-3 mt-6">
         <form className="flex-1 min-w-[200px]">
@@ -62,14 +63,20 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
           />
         </form>
         <div className="flex flex-wrap gap-2">
-          <Link
-            href="/admin/orders"
-            className={`px-3 py-1.5 rounded-full border text-xs no-underline transition-colors ${
-              !status ? "border-ink bg-ink text-paper" : "border-rule text-ink-soft hover:border-rule-strong"
-            }`}
-          >
-            All
-          </Link>
+          {[
+            ["To ship", "/admin/orders", status === ""],
+            ["All", "/admin/orders?status=all", status === "all"],
+          ].map(([label, href, active]) => (
+            <Link
+              key={label as string}
+              href={href as string}
+              className={`px-3 py-1.5 rounded-full border text-xs no-underline transition-colors ${
+                active ? "border-ink bg-ink text-paper" : "border-rule text-ink-soft hover:border-rule-strong"
+              }`}
+            >
+              {label as string}
+            </Link>
+          ))}
           {STATUSES.map((s) => (
             <Link
               key={s}
@@ -87,10 +94,29 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
       {orders.length === 0 ? (
         <p className="text-sm text-ink-faint mt-8">Nothing matches.</p>
       ) : (
-        <div className="mt-8 border border-rule rounded-2xl overflow-hidden">
+        <form method="get" className="mt-8">
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <button type="submit" formAction="/admin/orders/labels" formTarget="_blank" className="btn btn-primary">
+              <Printer size={14} strokeWidth={1.8} aria-hidden /> Print labels
+            </button>
+            <button type="submit" formAction="/admin/orders/invoices" formTarget="_blank" className="btn">
+              <FileText size={14} strokeWidth={1.8} aria-hidden /> Bulk invoices
+            </button>
+            <button type="submit" formAction="/admin/orders/export" className="btn">
+              <Download size={14} strokeWidth={1.8} aria-hidden /> Shiprocket CSV
+            </button>
+            <button type="submit" formAction={markShipped} className="btn">
+              <Truck size={14} strokeWidth={1.8} aria-hidden /> Mark as shipped
+            </button>
+            <span className="text-xs text-ink-faint">
+              Labels, invoices and CSV: none ticked = all to ship. Mark as shipped needs ticks.
+            </span>
+          </div>
+        <div className="border border-rule rounded-2xl overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-canvas text-left text-xs text-ink-faint uppercase tracking-wide">
+                <th className="px-4 py-3 w-8"><SelectAll /></th>
                 <th className="px-4 py-3 font-medium">Order</th>
                 <th className="px-4 py-3 font-medium">Customer</th>
                 <th className="px-4 py-3 font-medium">Placed</th>
@@ -102,6 +128,9 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
             <tbody>
               {orders.map((o) => (
                 <tr key={o.id} className="border-t border-rule">
+                  <td className="px-4 py-3">
+                    <input type="checkbox" name="id" value={o.id} aria-label={`Select order ${o.id}`} />
+                  </td>
                   <td className="px-4 py-3 font-medium text-ink">#{o.id}</td>
                   <td className="px-4 py-3 text-ink-soft">
                     {o.first_name} {o.last_name}
@@ -130,6 +159,7 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
             </tbody>
           </table>
         </div>
+        </form>
       )}
     </div>
   );

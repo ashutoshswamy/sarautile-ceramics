@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { Download, MapPin,Package, Plus, Star, Trash2, User, X } from "lucide-react";
 import { useAuthedSupabase } from "@/lib/useAuthedSupabase";
+import { cancelMyOrder } from "./actions";
 
 type OrderRow = {
   id: number;
@@ -58,9 +59,11 @@ const EMPTY_ADDRESS = {
 function OrdersTab({
   orders,
   itemsByOrder,
+  onCancel,
 }: {
   orders: OrderRow[];
   itemsByOrder: Map<number, OrderItemRow[]>;
+  onCancel: (id: number) => void;
 }) {
   if (orders.length === 0) {
     return (
@@ -121,6 +124,15 @@ function OrdersTab({
               Invoice
             </a>
           </div>
+          {(o.status === "pending" || o.status === "processing") && (
+            <button
+              type="button"
+              onClick={() => onCancel(o.id)}
+              className="text-xs text-warn-ink underline underline-offset-2 mt-3"
+            >
+              Cancel order &amp; refund
+            </button>
+          )}
         </div>
       ))}
     </div>
@@ -293,6 +305,13 @@ export default function ProfilePage() {
   const [addresses, setAddresses] = useState<AddressRow[]>([]);
   const [loaded, setLoaded] = useState(false);
 
+  async function handleCancel(id: number) {
+    if (!window.confirm(`Cancel order #${id}? The full amount will be refunded.`)) return;
+    const res = await cancelMyOrder(id);
+    window.alert(res.message);
+    if (res.ok) setOrders((os) => os.map((o) => (o.id === id ? { ...o, status: "cancelled" } : o)));
+  }
+
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
@@ -408,7 +427,7 @@ export default function ProfilePage() {
         {!loaded ? (
           <p className="text-sm text-ink-faint">Loading…</p>
         ) : tab === "orders" ? (
-          <OrdersTab orders={orders} itemsByOrder={itemsByOrder} />
+          <OrdersTab orders={orders} itemsByOrder={itemsByOrder} onCancel={handleCancel} />
         ) : (
           <AddressesTab
             addresses={addresses}

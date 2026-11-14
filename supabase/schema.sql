@@ -65,6 +65,18 @@ $$;
 revoke execute on function decrement_product_stock(text, int) from public, anon, authenticated;
 grant execute on function decrement_product_stock(text, int) to service_role;
 
+-- Cancelling an order puts its stock back. Same lockdown as decrement above.
+create or replace function increment_product_stock(p_slug text, p_qty int)
+returns void
+language sql
+as $$
+  update products
+  set left_count = left_count + p_qty, stock_updated_by = 'Order cancelled'
+  where slug = p_slug;
+$$;
+revoke execute on function increment_product_stock(text, int) from public, anon, authenticated;
+grant execute on function increment_product_stock(text, int) to service_role;
+
 create table product_images (
   id bigserial primary key,
   product_slug text not null references products(slug) on delete cascade,
@@ -263,6 +275,7 @@ create table orders (
   total int not null,
   razorpay_order_id text not null unique, -- one order per Razorpay payment
   razorpay_payment_id text not null,
+  refund_id text, -- set when the order is cancelled and refunded
   created_at timestamptz not null default now()
 );
 

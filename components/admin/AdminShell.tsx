@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { UserButton } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 import {
   LayoutGrid,
@@ -18,7 +19,6 @@ import {
   Camera,
   ExternalLink,
   Menu,
-  Settings,
   X,
   UserCog,
   History,
@@ -38,7 +38,6 @@ const NAV: { section: Section; label: string; Icon: typeof LayoutGrid }[] = [
   { section: "reviews", label: SECTIONS.reviews, Icon: Star },
   { section: "kiln-signups", label: SECTIONS["kiln-signups"], Icon: Mail },
   { section: "instagram", label: SECTIONS.instagram, Icon: Camera },
-  { section: "settings", label: SECTIONS.settings, Icon: Settings },
   { section: "staff", label: "Staff", Icon: UserCog },
   { section: "activity", label: "Staff activity", Icon: History },
 ];
@@ -116,9 +115,9 @@ export default function AdminShell({
   }, [menuOpen]);
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] md:grid md:grid-cols-[240px_1fr]">
+    <div className="min-h-screen md:grid md:grid-cols-[240px_1fr]">
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex md:flex-col md:gap-8 md:sticky md:top-16 md:h-[calc(100vh-4rem)] md:overflow-y-auto border-r border-rule px-5 py-8">
+      <aside className="hidden md:flex md:flex-col md:gap-8 md:sticky md:top-0 md:h-screen md:overflow-y-auto border-r border-rule px-5 py-8">
         <NavLinks pathname={pathname} access={access} />
         <div className="mt-auto flex flex-col gap-4">
           <Link
@@ -128,6 +127,7 @@ export default function AdminShell({
             <ExternalLink size={13} strokeWidth={1.7} aria-hidden />
             View store
           </Link>
+          <UserButton />
         </div>
       </aside>
 
@@ -177,6 +177,7 @@ export default function AdminShell({
                 <ExternalLink size={13} strokeWidth={1.7} aria-hidden />
                 View store
               </Link>
+              <UserButton />
             </div>
           </div>
         </div>
