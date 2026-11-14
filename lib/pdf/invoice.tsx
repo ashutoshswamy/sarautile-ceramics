@@ -1,20 +1,7 @@
-import { Image, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
+import { Image, Page, Text, View } from "@react-pdf/renderer";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import type { PdfOrder } from "./orders";
-import { FAINT, INK, LOGO, RULE, rupees } from "./shared";
-
-const s = StyleSheet.create({
-  page: { fontFamily: "DM Sans", fontSize: 10, color: INK, padding: 44 },
-  row: { flexDirection: "row" },
-  faint: { color: FAINT },
-  kicker: { fontSize: 8, color: FAINT, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 },
-  bold: { fontWeight: 600 },
-  th: { fontSize: 8, color: FAINT, textTransform: "uppercase", letterSpacing: 1, paddingVertical: 6 },
-  td: { paddingVertical: 7 },
-  line: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: RULE },
-  item: { flex: 1 },
-  num: { width: 70, textAlign: "right" },
-});
+import { LOGO, RULE, rupees, s } from "./shared";
 
 // ponytail: invoice is rendered on demand from the order row, not stored -
 // orders are only inserted after placeOrder verifies the Razorpay payment,
