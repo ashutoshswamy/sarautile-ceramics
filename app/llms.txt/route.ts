@@ -16,7 +16,6 @@ export async function GET() {
     "",
     "## Pages",
     `- [Shop all](${SITE_URL}/products): every piece in stock`,
-    `- [Our story](${SITE_URL}/story): who makes the pottery and how`,
     `- [Care guide](${SITE_URL}/care): looking after handmade stoneware`,
     "",
     "## Collections",

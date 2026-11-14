@@ -15,7 +15,7 @@ Storefront and admin panel for [sarautileceramics.in](https://sarautileceramics.
 
 ## Features
 
-**Storefront** - products, categories, collections, search and sort, wishlist, cart drawer, Razorpay checkout with discount codes, customer profile (orders, saved addresses, self-service cancellation), product reviews, story and care pages. Responsive from 320px up.
+**Storefront** - products, categories, collections, search and sort, wishlist, cart drawer, Razorpay checkout with discount codes, customer profile (orders, saved addresses, self-service cancellation), product reviews and a care page. Responsive from 320px up.
 
 **Admin panel** (`/admin`, staff at `/staff`) - dashboard, analytics, products, inventory, categories, collections, orders, customers, discounts, reviews, Instagram feed, staff access and an activity log.
 

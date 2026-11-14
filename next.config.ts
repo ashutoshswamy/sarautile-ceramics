@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/invoice/[id]": ["./lib/fonts/*.ttf", "./public/logo-nobg.png"],
   },
+  // The story page was removed; keep its old URL (and any inbound links) working.
+  async redirects() {
+    return [{ source: "/story", destination: "/", permanent: true }];
+  },
   async headers() {
     return [
       // Home, shop and collection pages are force-dynamic/searchParams-driven so

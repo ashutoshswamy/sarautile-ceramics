@@ -1,7 +1,6 @@
 import Image from "next/image";
 import {
   Amphora,
-  BookOpen,
   Droplets,
   Mail,
   Tag,
@@ -12,7 +11,6 @@ import FooterLink from "@/components/FooterLink";
 const ICON_PROPS = { size: 15, strokeWidth: 1.7, className: "shrink-0 text-ink-faint" } as const;
 
 const STUDIO_LINKS = [
-  { href: "/story", label: "Our story", icon: <BookOpen {...ICON_PROPS} /> },
   { href: "/care", label: "Care", icon: <Droplets {...ICON_PROPS} /> },
   {
     href: "mailto:team@sarautileceramics.in",

@@ -18,7 +18,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     page("", 1),
     page("/products", 0.9),
-    page("/story", 0.6),
     page("/care", 0.5),
     ...products.map((p) => page(`/products/${p.slug}`, 0.8, p.createdAt)),
     ...collections.map((c) => page(`/collections/${c.slug}`, 0.7)),
