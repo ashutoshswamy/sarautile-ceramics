@@ -22,7 +22,7 @@ export async function generateMetadata(
   const description =
     product.description?.slice(0, 160) ??
     `${product.name} - handmade wheel-thrown stoneware by Sara Utile Ceramics. ₹${product.price}.`;
-  const image = product.images[0] ?? product.imageUrl ?? "/og-image.png";
+  const image = product.images[0] ?? product.imageUrl ?? "/og-image.jpg";
   return {
     title: `${product.name} - Sara Utile Ceramics`,
     description,
@@ -56,6 +56,8 @@ export default async function ProductPage(props: PageProps<"/products/[slug]">) 
       url: `${SITE_URL}/products/${product.slug}`,
       price: product.price,
       priceCurrency: "INR",
+      itemCondition: "https://schema.org/NewCondition",
+      seller: { "@type": "Organization", name: SITE_NAME },
       availability: product.left.startsWith("0 ")
         ? "https://schema.org/OutOfStock"
         : "https://schema.org/InStock",
@@ -69,13 +71,23 @@ export default async function ProductPage(props: PageProps<"/products/[slug]">) 
       : undefined,
   };
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+      { "@type": "ListItem", position: 2, name: "Shop", item: `${SITE_URL}/products` },
+      { "@type": "ListItem", position: 3, name: product.name, item: `${SITE_URL}/products/${product.slug}` },
+    ],
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         // "<" escaped so product text can't close the script tag.
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(productJsonLd).replace(/</g, "\\u003c"),
+          __html: JSON.stringify([productJsonLd, breadcrumbJsonLd]).replace(/</g, "\\u003c"),
         }}
       />
       <div className="container-x">

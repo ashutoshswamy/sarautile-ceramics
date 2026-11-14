@@ -11,13 +11,13 @@ const COPY = {
     kicker: "Welcome back",
     asideTitle: "Ceramics made slowly, saved for later.",
     asideBody:
-      "Pick up where you left off - your wishlist, your cart, and your place in line for the next firing.",
+      "Pick up where you left off - your wishlist, your cart, and your saved pieces.",
   },
   up: {
     kicker: "New here",
     asideTitle: "Start your shelf.",
     asideBody:
-      "One account keeps every piece you love waiting for you - and puts you first in line when the kiln opens.",
+      "One account keeps every piece you love waiting for you.",
   },
 };
 

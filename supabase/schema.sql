@@ -12,8 +12,9 @@
 -- "admin" on your Clerk user, set by hand in the Clerk dashboard).
 --
 -- This file is the whole schema and assumes a fresh database - it creates
--- every table from scratch and will error on any that already exist. There
--- are no migrations; to start over, run reset.sql first, then this file.
+-- every table from scratch and will error on any that already exist. For an
+-- existing database run the files in supabase/migrations/ in order instead;
+-- to start over, run reset.sql first, then this file.
 
 -- ---- catalog (public read, no public write - only /admin's service-role
 -- client can write) ----
@@ -238,19 +239,6 @@ create policy "users manage their own wishlist" on wishlist_items
   for all to authenticated
   using ((select auth.jwt()->>'sub') = user_id)
   with check ((select auth.jwt()->>'sub') = user_id);
-
--- ---- kiln-opening email signups (public, write-only) ----
-
-create table kiln_signups (
-  id bigserial primary key,
-  email text not null unique check (char_length(email) <= 254),
-  created_at timestamptz not null default now()
-);
-
-alter table kiln_signups enable row level security;
-
-create policy "anyone can sign up" on kiln_signups
-  for insert to anon, authenticated with check (true);
 
 -- ---- orders (checkout writes a real row via Razorpay; the service-role
 -- client in app/checkout/actions.ts and app/admin/orders/** can read/write

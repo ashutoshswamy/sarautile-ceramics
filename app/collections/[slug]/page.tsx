@@ -3,17 +3,26 @@ import { Amphora } from "lucide-react";
 import ProductGridCard from "@/components/ProductGridCard";
 import { getCollection, getCollectionMeta } from "@/lib/queries";
 import type { Metadata } from "next";
+import { SITE_URL } from "@/lib/site";
 
 export async function generateMetadata(
   props: PageProps<"/collections/[slug]">
 ): Promise<Metadata> {
   const { slug } = await props.params;
-  const collection = await getCollectionMeta(slug);
+  const [collection, products] = await Promise.all([getCollectionMeta(slug), getCollection(slug)]);
   if (!collection) return { title: "Collection - Sara Utile Ceramics", robots: { index: false } };
+  const names = products.slice(0, 3).map((p) => p.name).join(", ");
   return {
     title: `${collection.name} - handmade ceramics collection | Sara Utile Ceramics`,
-    description: `Shop the ${collection.name} collection - handmade wheel-thrown stoneware by Sara Utile Ceramics, India.`,
+    description: `Shop the ${collection.name} collection - ${products.length} handmade wheel-thrown stoneware ${
+      products.length === 1 ? "piece" : "pieces"
+    }${names ? `, including ${names}` : ""}. Made in small batches by Sara Utile Ceramics, India.`.slice(0, 200),
     alternates: { canonical: `/collections/${slug}` },
+    openGraph: {
+      title: `${collection.name} - Sara Utile Ceramics`,
+      url: `/collections/${slug}`,
+      images: ["/og-image.jpg"],
+    },
   };
 }
 
@@ -22,8 +31,38 @@ export default async function CollectionPage(props: PageProps<"/collections/[slu
   const [collection, products] = await Promise.all([getCollectionMeta(slug), getCollection(slug)]);
   if (!collection) notFound();
 
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: collection.name,
+      url: `${SITE_URL}/collections/${slug}`,
+      mainEntity: {
+        "@type": "ItemList",
+        itemListElement: products.map((p, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          url: `${SITE_URL}/products/${p.slug}`,
+          name: p.name,
+        })),
+      },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+        { "@type": "ListItem", position: 2, name: collection.name, item: `${SITE_URL}/collections/${slug}` },
+      ],
+    },
+  ];
+
   return (
     <div className="container-x section-tight">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+      />
       <h1 className="display-2">{collection.name}</h1>
       <p className="lede text-[0.95rem] mt-3">
         {products.length} {products.length === 1 ? "piece" : "pieces"}

@@ -25,7 +25,6 @@ drop table if exists
   categories,
   site_settings,
   discount_codes,
-  kiln_signups,
   instagram_posts,
   staff_logs,
   inventory_history

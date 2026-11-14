@@ -263,6 +263,15 @@
   color: var(--ink);
   transition: border-color 0.16s ease, box-shadow 0.16s ease;
 }
+/* iOS Safari zooms the page when a focused input is under 16px - keep every
+   text control at 16px on touch screens. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
 .field::placeholder {
   color: var(--ink-faint);
 }

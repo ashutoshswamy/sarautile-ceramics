@@ -112,7 +112,7 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
               Labels, invoices and CSV: none ticked = all to ship. Mark as shipped needs ticks.
             </span>
           </div>
-        <div className="border border-rule rounded-2xl overflow-hidden">
+        <div className="border border-rule rounded-2xl overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-canvas text-left text-xs text-ink-faint uppercase tracking-wide">

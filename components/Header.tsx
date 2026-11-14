@@ -431,7 +431,7 @@ export default function Header() {
               type="button"
               onClick={() => closeSearch()}
               aria-label="Close search"
-              className="text-ink-soft cursor-pointer"
+              className="text-ink-soft cursor-pointer p-2 -m-2"
               {...hoverHandlers({ color: "var(--ink)" }, { color: "var(--ink-soft)" })}
             >
               <X size={20} strokeWidth={1.6} />

@@ -21,6 +21,7 @@ type ProductRow = {
   image_url: string | null;
   category_slug: string | null;
   description: string | null;
+  created_at: string;
 };
 
 type ProductImageRow = {
@@ -47,6 +48,7 @@ function assemble(productRows: ProductRow[], imageRows: ProductImageRow[]): Prod
       .map((i) => i.url),
     categorySlug: p.category_slug,
     description: p.description,
+    createdAt: p.created_at,
   }));
 }
 

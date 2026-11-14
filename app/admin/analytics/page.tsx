@@ -106,7 +106,7 @@ export default async function AdminAnalyticsPage() {
           {topProducts.length === 0 ? (
             <p className="text-sm text-ink-faint mt-3">No sales yet.</p>
           ) : (
-            <div className="mt-3 border border-rule rounded-2xl overflow-hidden">
+            <div className="mt-3 border border-rule rounded-2xl overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-canvas text-left text-xs text-ink-faint uppercase tracking-wide">
@@ -143,7 +143,7 @@ export default async function AdminAnalyticsPage() {
               Everything&apos;s above {LOW_STOCK_THRESHOLD} units.
             </p>
           ) : (
-            <div className="mt-3 border border-rule rounded-2xl overflow-hidden">
+            <div className="mt-3 border border-rule rounded-2xl overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-canvas text-left text-xs text-ink-faint uppercase tracking-wide">

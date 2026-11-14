@@ -1,36 +1,31 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sara Utile Ceramics
 
-## Getting Started
+Storefront and admin panel for [sarautileceramics.in](https://sarautileceramics.in) - handmade wheel-thrown stoneware from India, sold in INR.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- [Next.js](https://nextjs.org) 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4
+- [Supabase](https://supabase.com) - Postgres + Storage (catalog, orders, carts, wishlists, reviews)
+- [Clerk](https://clerk.com) - sign-in, admin/staff roles (also used as Supabase third-party auth)
+- [Razorpay](https://razorpay.com) - payments and refunds
+- `@react-pdf/renderer` - invoices and shipping labels · GSAP - motion
+- Deployed on Vercel
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+> This Next.js version has breaking changes from older releases (e.g. `proxy.ts` replaces `middleware.ts`). See `AGENTS.md`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Storefront** - products, categories, collections, search and sort, wishlist, cart drawer, Razorpay checkout with discount codes, customer profile (orders, saved addresses, self-service cancellation), product reviews, story and care pages. Responsive from 320px up.
 
-## Learn More
+**Admin panel** (`/admin`, staff at `/staff`) - dashboard, analytics, products, inventory, categories, collections, orders, customers, discounts, reviews, Instagram feed, staff access and an activity log.
 
-To learn more about Next.js, take a look at the following resources:
+**Order fulfilment**
+1. **Orders -> To ship** lists `pending` and `processing` orders. Tick the ones you want, or tick none to use all of them.
+2. **Shiprocket CSV** downloads a file in Shiprocket's bulk-import template. Upload it in Shiprocket. Create each product there with its slug as the Master SKU.
+3. **Print labels** opens an A6 box label per order (ship-to, items, weight, "fragile"). **Bulk invoices** opens one PDF with an invoice per order. Single invoices download from the order row.
+4. **Mark as shipped** moves the ticked orders to `shipped`.
+5. **Cancel order & refund** (admin order page, or the customer's profile while the order is `pending`/`processing`) refunds the full payment through Razorpay, puts the stock back and marks the order `cancelled`. If the refund fails the order is left as it was.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Set your pickup address for labels in `SHIP_FROM` in `lib/site.ts`. Package size and the default weight for the CSV live at the top of `app/admin/orders/export/route.ts`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**SEO** - per-page metadata and canonicals, DB-driven `sitemap.xml`, `robots.txt`, `/llms.txt`, and JSON-LD (Organization, WebSite, Product, BreadcrumbList, CollectionPage). Social card: `public/og-image.jpg`.

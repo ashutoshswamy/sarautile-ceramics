@@ -52,13 +52,13 @@ export const metadata: Metadata = {
     locale: "en_IN",
     title: "Sara Utile Ceramics - handmade stoneware pottery",
     description,
-    images: [{ url: "/og-image.png", width: 1730, height: 909, alt: SITE_NAME }],
+    images: [{ url: "/og-image.jpg", width: 1732, height: 908, alt: SITE_NAME }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Sara Utile Ceramics - handmade stoneware pottery",
     description,
-    images: ["/og-image.png"],
+    images: ["/og-image.jpg"],
   },
   robots: { index: true, follow: true },
   manifest: "/site.webmanifest",
@@ -68,10 +68,25 @@ export const viewport: Viewport = { themeColor: "#fff7ed" };
 
 const orgJsonLd = {
   "@context": "https://schema.org",
-  "@type": "Organization",
-  name: SITE_NAME,
-  url: SITE_URL,
-  logo: `${SITE_URL}/logo.png`,
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#org`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: `${SITE_URL}/logo.png`,
+      email: "team@sarautileceramics.in",
+      description,
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      url: SITE_URL,
+      name: SITE_NAME,
+      inLanguage: "en-IN",
+      publisher: { "@id": `${SITE_URL}/#org` },
+    },
+  ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -88,8 +103,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         },
       }}
     >
-      <html lang="en" className={`${dmSans.variable} ${bricolage.variable} font-sans`}>
-        <body className="min-h-screen flex flex-col bg-paper text-ink antialiased">
+      <html lang="en-IN" className={`${dmSans.variable} ${bricolage.variable} font-sans`}>
+        <body className="min-h-dvh flex flex-col bg-paper text-ink antialiased">
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}

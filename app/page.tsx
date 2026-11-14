@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Hero from "@/components/Hero";
-import KilnNotify from "@/components/KilnNotify";
 import ProductArc from "@/components/ProductArc";
 import ProductRow from "@/components/ProductRow";
 import ShopByCategory from "@/components/ShopByCategory";
@@ -40,7 +39,7 @@ const VALUES = [
     image: "/step2.png",
     stage: "Kiln",
     title: "One firing a fortnight",
-    body: "The kiln takes what it takes. Sign up and we'll nudge you when the door opens.",
+    body: "The kiln takes what it takes. Fresh batches land in the shop as they come out.",
     tile: "bg-gold-bg md:col-span-5 md:mt-14",
     ink: "text-gold-ink",
     pill: "bg-gold-ink/10 text-gold-ink",
@@ -127,31 +126,6 @@ export default async function Home() {
             ))}
           </ol>
         </div>
-      </section>
-
-      <section className="container-x section-tight border-t border-rule">
-        <Reveal className="bg-[var(--ink)] rounded-3xl overflow-hidden grid md:grid-cols-2 items-center">
-          <div className="p-8 sm:p-12">
-            <span className="kicker text-terracotta-light">One firing a fortnight</span>
-            <h2 className="display-2 mt-2 text-paper">Get a text when the kiln opens</h2>
-            <p className="mt-2.5 mb-6 text-[0.95rem] leading-relaxed text-paper/70 max-w-md">
-              No spam, no weekly newsletter - just a heads up when a fresh batch
-              is ready to buy, before it sells out.
-            </p>
-            <KilnNotify />
-          </div>
-          <div className="p-8 sm:p-10 flex items-center justify-center md:self-stretch">
-            <div className="relative w-full max-w-[260px] aspect-square rounded-2xl overflow-hidden">
-              <Image
-                src="/newsletter.png"
-                alt=""
-                fill
-                sizes="260px"
-                className="object-cover"
-              />
-            </div>
-          </div>
-        </Reveal>
       </section>
 
       <InstagramFeed posts={instagramPosts} />

@@ -9,6 +9,15 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      // Home, shop and collection pages are force-dynamic/searchParams-driven so
+      // Next marks them no-store; the data under them is already cached 60s
+      // (lib/queries.ts), so let the CDN hold the HTML briefly too.
+      {
+        source: "/:path(|products|collections/[^/]+)",
+        headers: [
+          { key: "Cache-Control", value: "public, s-maxage=60, stale-while-revalidate=300" },
+        ],
+      },
       {
         source: "/:path*",
         headers: [

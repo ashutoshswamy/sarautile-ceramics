@@ -125,7 +125,7 @@ export default async function AdminOrderDetailPage(
         </div>
       </div>
 
-      <div className="mt-8 border border-rule rounded-2xl overflow-hidden">
+      <div className="mt-8 border border-rule rounded-2xl overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-canvas text-left text-xs text-ink-faint uppercase tracking-wide">

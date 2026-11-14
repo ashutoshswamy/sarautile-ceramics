@@ -21,7 +21,7 @@ export default function SortSelect({ value }: { value: SortValue }) {
       value={value}
       onChange={handleChange}
       aria-label="Sort"
-      className="bg-transparent text-sm text-ink-soft cursor-pointer focus:outline-none"
+      className="bg-transparent text-sm text-ink-soft cursor-pointer focus:outline-none py-2"
     >
       {SORT_OPTIONS.map((o) => (
         <option key={o.value} value={o.value}>

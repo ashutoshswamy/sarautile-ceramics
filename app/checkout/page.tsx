@@ -219,6 +219,7 @@ export default function CheckoutPage() {
               <input
                 name="email"
                 type="email"
+                autoComplete="email"
                 required
                 defaultValue={user.primaryEmailAddress?.emailAddress}
                 placeholder="you@wherever.com"
@@ -227,23 +228,23 @@ export default function CheckoutPage() {
             </label>
             <label className="field-label">
               First name
-              <input name="firstName" required defaultValue={picked?.first_name ?? user.firstName ?? ""} className="field" />
+              <input name="firstName" autoComplete="given-name" required defaultValue={picked?.first_name ?? user.firstName ?? ""} className="field" />
             </label>
             <label className="field-label">
               Last name
-              <input name="lastName" required defaultValue={picked?.last_name ?? user.lastName ?? ""} className="field" />
+              <input name="lastName" autoComplete="family-name" required defaultValue={picked?.last_name ?? user.lastName ?? ""} className="field" />
             </label>
             <label className="field-label col-span-2">
               Address
-              <input name="address" required defaultValue={picked?.address} className="field" />
+              <input name="address" autoComplete="address-line1" required defaultValue={picked?.address} className="field" />
             </label>
             <label className="field-label">
               City
-              <input name="city" required defaultValue={picked?.city} className="field" />
+              <input name="city" autoComplete="address-level2" required defaultValue={picked?.city} className="field" />
             </label>
             <label className="field-label">
               State
-              <input name="state" required defaultValue={picked?.state} className="field" />
+              <input name="state" autoComplete="address-level1" required defaultValue={picked?.state} className="field" />
             </label>
             <label className="field-label col-span-2">
               Mobile number
@@ -253,6 +254,7 @@ export default function CheckoutPage() {
               PIN code
               <input
                 name="pin"
+                autoComplete="postal-code"
                 required
                 defaultValue={picked?.pin}
                 inputMode="numeric"

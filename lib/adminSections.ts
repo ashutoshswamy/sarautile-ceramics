@@ -13,7 +13,6 @@ export const SECTIONS = {
   customers: "Customers",
   discounts: "Discounts",
   reviews: "Reviews",
-  "kiln-signups": "Kiln signups",
   instagram: "Instagram",
 } as const;
 

@@ -16,6 +16,7 @@ export type Product = {
   images: string[];
   categorySlug: string | null;
   description: string | null;
+  createdAt: string;
 };
 
 export const storyBits = [

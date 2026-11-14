@@ -7,7 +7,6 @@ import {
   Amphora,
   PackageX,
   Star,
-  Mail,
   Plus,
   Percent,
   ChevronRight,
@@ -47,7 +46,6 @@ async function getDashboard() {
     { count: productCount },
     { data: products },
     { count: pendingReviews },
-    { count: signups },
   ] = await Promise.all([
     supabase
       .from("orders")
@@ -57,7 +55,6 @@ async function getDashboard() {
     supabase.from("products").select("*", { count: "exact", head: true }),
     supabase.from("products").select("slug, name, left_count").returns<ProductRow[]>(),
     supabase.from("reviews").select("*", { count: "exact", head: true }).eq("approved", false),
-    supabase.from("kiln_signups").select("*", { count: "exact", head: true }),
   ]);
 
   const allOrders = orders ?? [];
@@ -73,7 +70,6 @@ async function getDashboard() {
     productCount: productCount ?? 0,
     lowStock,
     pendingReviews: pendingReviews ?? 0,
-    signups: signups ?? 0,
     recentOrders: allOrders.slice(0, RECENT_ORDERS),
   };
 }
@@ -111,7 +107,6 @@ export default async function AdminDashboard() {
   const QUICK_ACTIONS = [
     { href: "/admin/products/new", label: "Add product", Icon: Plus },
     { href: "/admin/discounts", label: "New discount code", Icon: Percent },
-    { href: "/admin/kiln-signups", label: `Kiln signups (${d.signups})`, Icon: Mail },
   ];
 
   return (
@@ -144,7 +139,7 @@ export default async function AdminDashboard() {
           {d.recentOrders.length === 0 ? (
             <p className="text-sm text-ink-faint mt-4">No orders yet.</p>
           ) : (
-            <div className="mt-3 border border-rule rounded-2xl overflow-hidden">
+            <div className="mt-3 border border-rule rounded-2xl overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-canvas text-left text-xs text-ink-faint uppercase tracking-wide">

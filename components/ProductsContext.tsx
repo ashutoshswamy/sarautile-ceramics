@@ -71,6 +71,7 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
             .map((i) => i.url),
           categorySlug: p.category_slug,
           description: p.description,
+          createdAt: p.created_at,
         }));
         setProducts(assembled);
         setCategories(categoryRows ?? []);

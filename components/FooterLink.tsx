@@ -47,7 +47,7 @@ export default function FooterLink({
     <Link
       ref={linkRef}
       href={href}
-      className="inline-flex items-center gap-2.5 py-1 text-sm text-ink-soft no-underline"
+      className="inline-flex items-center gap-2.5 py-2 text-sm text-ink-soft no-underline"
     >
       {icon}
       {label}

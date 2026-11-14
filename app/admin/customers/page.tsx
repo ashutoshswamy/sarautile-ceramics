@@ -73,7 +73,7 @@ export default async function AdminCustomersPage(props: PageProps<"/admin/custom
       {customers.length === 0 ? (
         <p className="text-sm text-ink-faint mt-8">Nothing matches.</p>
       ) : (
-        <div className="mt-8 border border-rule rounded-2xl overflow-hidden">
+        <div className="mt-8 border border-rule rounded-2xl overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-canvas text-left text-xs text-ink-faint uppercase tracking-wide">
